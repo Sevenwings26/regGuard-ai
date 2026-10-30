@@ -1,0 +1,8 @@
+langgraph==1.2.18
+langchain-core==1.7.3
+pydantic==2.14.2
+typing-extensions>=4.16.0
+sqlglot==26.4.0
+qdrant-client==1.12.1
+fastembed==0.9.1
+pytest==9.2.0

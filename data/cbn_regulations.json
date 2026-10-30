@@ -1,0 +1,146 @@
+[
+  {
+    "clause_id": "CBN-AML-2022-SEC-10-1",
+    "section_title": "Cash Transaction Reporting Thresholds",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "No financial institution or designated non-financial business and profession shall make or receive any cash transaction exceeding N5,000,000 or its equivalent for an individual or N10,000,000 or its equivalent for a body corporate, unless a report is filed with the NFIU within seven days of the transaction.",
+    "tags": ["threshold", "cash", "reporting", "individual", "corporate"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-10-3",
+    "section_title": "Prohibition of Structuring and Smurfing",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "A financial institution shall closely monitor and report multiple transactions that individually fall below the statutory threshold of N5,000,000 (individual) or N10,000,000 (corporate) but in aggregate exceed the threshold within a rolling 48-hour to 72-hour period, where the transactions appear intentionally structured or smurfed to evade statutory reporting. Such activity mandates filing a Suspicious Transaction Report (STR) within 24 hours.",
+    "tags": ["structuring", "smurfing", "threshold", "str", "monitoring"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-18-1",
+    "section_title": "Definition and Identification of Politically Exposed Persons (PEPs)",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "Politically Exposed Persons (PEPs) include individuals who are or have been entrusted with prominent public functions in Nigeria or foreign countries, including Heads of State, State Governors, Commissioners, Ministers, Members of Parliament, senior judicial officials, and senior executives of state-owned corporations. Financial institutions must implement risk management systems to identify if a customer or beneficial owner is a PEP.",
+    "tags": ["pep", "kyc", "identification", "sanctions"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-18-4",
+    "section_title": "Enhanced Due Diligence (EDD) for PEPs",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "Financial institutions shall obtain senior management approval before establishing or continuing business relationships with PEPs, take reasonable measures to establish the source of wealth and source of funds of customers and beneficial owners identified as PEPs, and conduct enhanced ongoing monitoring of the business relationship.",
+    "tags": ["pep", "edd", "source_of_funds", "senior_management"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-18-7",
+    "section_title": "PEPs Family Members and Close Associates",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "The requirements for PEPs under Section 18 apply equally to family members (including spouses, children, parents, and siblings) and close associates or corporate vehicles acting on behalf of or connected to such PEPs. Discrepancies in customer identification where a strong name resemblance occurs must undergo biometric and secondary KYC verification before clearing.",
+    "tags": ["pep", "family", "associates", "proxy", "kyc"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-09-1",
+    "section_title": "Mandatory Suspicious Transaction Reporting (STR)",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "A financial institution that suspects or has reasonable grounds to suspect that funds or transactions are the proceeds of unlawful activity, or are related to money laundering or terrorist financing, shall immediately, and not later than 24 hours after forming the suspicion, submit a Suspicious Transaction Report (STR) to the Nigerian Financial Intelligence Unit (NFIU).",
+    "tags": ["str", "reporting", "nfiu", "suspicion"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-04-2",
+    "section_title": "Customer Due Diligence (CDD) and Beneficial Ownership",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "Financial institutions must identify the beneficial owner and take reasonable measures to verify the identity of the beneficial owner using relevant information obtained from a reliable source. For legal entities, institutions must verify the corporate name, registration number, address, and directors holding 5% or more controlling interest.",
+    "tags": ["cdd", "kyc", "beneficial_ownership", "cac"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-25-1",
+    "section_title": "Record Keeping and Audit Retention",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "Financial institutions must maintain all necessary records on domestic and international transactions, customer accounts, and CDD files for at least five years after the completion of the transaction or termination of the business relationship, ensuring that transaction records are sufficient to permit reconstruction of individual transactions for prosecution.",
+    "tags": ["record_keeping", "audit", "retention", "compliance"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-30-2",
+    "section_title": "Sanctions Screening and Asset Freezing",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "Financial institutions must screen all existing and prospective customers, counterparties, and transactions against domestic and international sanctions watchlists. Where a positive match is identified, the institution must immediately freeze the funds without prior notice and file a report with the NFIU within 24 hours.",
+    "tags": ["sanctions", "screening", "freezing", "watchlist"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-12-1",
+    "section_title": "Wire Transfer Information Requirements",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "For all cross-border and domestic electronic transfers exceeding N200,000, financial institutions must ensure that full originator and beneficiary details (including name, account number, BVN/NIN, and physical address) accompany the wire transfer across payment rails.",
+    "tags": ["wire_transfer", "electronic", "bvn", "threshold"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-15-2",
+    "section_title": "Prohibition of Shell Banks and Anonymous Accounts",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "Financial institutions shall not enter into or continue correspondent banking relationships with shell banks, nor shall they establish or maintain anonymous accounts, numbered accounts, or accounts in fictitious names.",
+    "tags": ["shell_bank", "anonymous", "prohibition"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-20-1",
+    "section_title": "Correspondent Banking Due Diligence",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "Before establishing cross-border correspondent banking relationships, institutions must gather sufficient information about the respondent institution to understand fully the nature of its business and assess the adequacy of its AML/CFT controls.",
+    "tags": ["correspondent_banking", "cross_border", "cdd"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-33-1",
+    "section_title": "High-Risk Account Ongoing Monitoring",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "Financial institutions must apply automated transaction monitoring rules to detect unusual velocity, sudden changes in deposit behavior, or aggregate inflows inconsistent with customer economic profile or documented turnover.",
+    "tags": ["monitoring", "velocity", "high_risk"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-06-3",
+    "section_title": "Legal Entity Verification and Corporate Documentation",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "Financial institutions must obtain certificate of incorporation, memorandum and articles of association, CAC status report, and tax identification number (TIN) before activating accounts for corporate entities.",
+    "tags": ["corporate", "cac", "tin", "kyc"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-41-1",
+    "section_title": "Sanctions and Penalties for Non-Compliance",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "Failure to report suspicious transactions, evading threshold monitoring, or failing to identify PEP relationships exposes financial institutions and their compliance officers to administrative fines up to N20,000,000 and possible license revocation.",
+    "tags": ["penalties", "enforcement", "cbn"]
+  },
+  {
+    "clause_id": "CBN-AML-2013-SEC-02-1",
+    "section_title": "Cash Transaction Limit (Historic 2013 Regulation)",
+    "regulation": "CBN AML/CFT Regulations 2013",
+    "effective_date": "2013-01-15",
+    "text": "Under the 2013 Regulations, no individual shall make or accept cash payments exceeding N5,000,000 and no body corporate shall make or accept cash payments exceeding N10,000,000 unless through a financial institution.",
+    "tags": ["threshold", "cash", "historic", "corporate", "individual"]
+  },
+  {
+    "clause_id": "CBN-AML-2013-SEC-06-1",
+    "section_title": "Suspicious Transaction Reporting Timelines (Historic 2013 Regulation)",
+    "regulation": "CBN AML/CFT Regulations 2013",
+    "effective_date": "2013-01-15",
+    "text": "Financial institutions must report any suspicious transaction to the Financial Intelligence Unit within 7 days of identifying the suspicious nature under the 2013 rules.",
+    "tags": ["str", "reporting", "historic", "timelines"]
+  },
+  {
+    "clause_id": "CBN-AML-2013-SEC-14-1",
+    "section_title": "Politically Exposed Persons Protocols (Historic 2013 Regulation)",
+    "regulation": "CBN AML/CFT Regulations 2013",
+    "effective_date": "2013-01-15",
+    "text": "Financial institutions must verify PEP status and obtain executive management consent prior to account opening under the 2013 regulatory framework.",
+    "tags": ["pep", "historic", "due_diligence"]
+  }
+]

@@ -1,0 +1,73 @@
+{
+  "case_id": "CASE-B-PEP-002",
+  "jurisdiction": "NGA_CBN",
+  "flagged_transaction": {
+    "transaction_id": "TX-NGA-2023-0202",
+    "account_id": "ACC-IND-4412",
+    "customer_name": "Musa Ibrahim",
+    "dob": "1994-08-12",
+    "bvn": "22198031201",
+    "nationality": "NGA",
+    "amount": 8200000.00,
+    "currency": "NGN",
+    "timestamp": "2023-02-15T09:40:00Z",
+    "flag_reason": "PEP_NAME_MATCH"
+  },
+  "mock_responses": {
+    "iteration_1": {
+      "act": {
+        "tool": "watchlist_lookup",
+        "result": {
+          "match_found": true,
+          "matched_name": "Musa Ibrahim",
+          "similarity": 0.87,
+          "category": "PEP",
+          "pep_role": "Former State Commissioner",
+          "watchlist_dob": "1961-04-03"
+        },
+        "claim_text": "Watchlist search returned 0.87 similarity match for Musa Ibrahim (PEP category - Former State Commissioner).",
+        "supporting_sources": ["WATCHLIST-PEP-NGA-041"]
+      },
+      "critique": {
+        "sufficient": false,
+        "reason": "Watchlist name similarity 0.87 matches PEP entry, but DOB and nationality require verification before concluding.",
+        "missing": [
+          "DOB verification",
+          "nationality verification"
+        ]
+      },
+      "refine": {
+        "action": "Re-query watchlist with KYC secondary attributes (DOB: 1994-08-12, Nationality: NGA) and verify customer identity profile."
+      }
+    },
+    "iteration_2": {
+      "act": {
+        "tool": "kyc_crosscheck",
+        "result": {
+          "customer_dob": "1994-08-12",
+          "watchlist_dob": "1961-04-03",
+          "dob_match": false,
+          "age_difference_years": 33
+        },
+        "claim_text": "Customer KYC DOB (1994-08-12) conflicts with Watchlist PEP DOB (1961-04-03), indicating a 33-year discrepancy. Secondary profile lookup yielded no corroborating PEP indicators.",
+        "supporting_sources": ["KYC-ACC-IND-4412", "WATCHLIST-PEP-NGA-041"]
+      },
+      "critique": {
+        "sufficient": false,
+        "reason": "watchlist ambiguity not resolved; transaction intent not established",
+        "missing": [
+          "historical transaction pattern"
+        ]
+      }
+    },
+    "synthesis": {
+      "action": "escalate",
+      "summary": "Investigation into transaction TX-NGA-2023-0202 flagged for PEP match resulted in unresolved ambiguity. While name similarity is 0.87, a 33-year DOB mismatch indicates likely false positive, but proxy exposure cannot be ruled out autonomously.",
+      "escalation_reason": "Watchlist ambiguity not resolved; transaction intent not established. In accordance with anti-hallucination policy, automated resolution is halted and referred to human compliance officer.",
+      "unresolved_gaps": [
+        "historical transaction pattern",
+        "biometric BVN verification against PEP registry"
+      ]
+    }
+  }
+}

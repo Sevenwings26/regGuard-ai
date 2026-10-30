@@ -1,0 +1,62 @@
+[
+  {
+    "watchlist_id": "WL-PEP-NGA-041",
+    "name": "Musa Ibrahim",
+    "aliases": ["Musa A. Ibrahim", "Hon. Musa Ibrahim", "Musa Aliyu Ibrahim"],
+    "dob": "1961-04-03",
+    "nationality": "NGA",
+    "category": "PEP",
+    "role_description": "Former State Commissioner for Works and Infrastructure (2015-2019)",
+    "jurisdiction": "NGA",
+    "listing_date": "2019-06-01",
+    "risk_level": "HIGH"
+  },
+  {
+    "watchlist_id": "WL-SANC-NGA-012",
+    "name": "Alhaji Garba Danladi",
+    "aliases": ["Garba Danladi", "Alhaji Danladi"],
+    "dob": "1975-11-22",
+    "nationality": "NGA",
+    "category": "SANCTIONED",
+    "role_description": "Designated under Nigerian Terrorism Prevention Act 2022 - Illicit Finance Rail",
+    "jurisdiction": "NGA",
+    "listing_date": "2022-03-15",
+    "risk_level": "CRITICAL"
+  },
+  {
+    "watchlist_id": "WL-PEP-NGA-088",
+    "name": "Chief Kingsley Okoye",
+    "aliases": ["Kingsley Chibuzor Okoye", "Senator Okoye"],
+    "dob": "1958-09-14",
+    "nationality": "NGA",
+    "category": "PEP",
+    "role_description": "Former Federal Senator, Committee on Petroleum Resources (2011-2019)",
+    "jurisdiction": "NGA",
+    "listing_date": "2019-07-01",
+    "risk_level": "HIGH"
+  },
+  {
+    "watchlist_id": "WL-PEP-NGA-103",
+    "name": "Fatima Bello",
+    "aliases": ["Hajiya Fatima Bello", "Fatima Mohammed Bello"],
+    "dob": "1982-01-30",
+    "nationality": "NGA",
+    "category": "PEP",
+    "role_description": "Direct Family Associate to Federal Ministry Executive",
+    "jurisdiction": "NGA",
+    "listing_date": "2021-10-10",
+    "risk_level": "MEDIUM"
+  },
+  {
+    "watchlist_id": "WL-SANC-UN-904",
+    "name": "Abubakar Sadiq",
+    "aliases": ["Sadiq Abubakar", "Abu Sadiq"],
+    "dob": "1988-06-12",
+    "nationality": "NGA",
+    "category": "SANCTIONED",
+    "role_description": "Consolidated UN & NFIU Sanctions List - Specially Designated Terrorist Financier",
+    "jurisdiction": "NGA",
+    "listing_date": "2020-08-20",
+    "risk_level": "CRITICAL"
+  }
+]
