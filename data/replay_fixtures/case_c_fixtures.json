@@ -1,0 +1,143 @@
+{
+  "1a751bfc9cf3dba13a9314a6c2c18c809a8a49a48a771da55035280b63079703": {
+    "input_payload": {
+      "prompt": "Investigate the following flagged transaction:\nJurisdiction: NGA_CBN\nTransaction Metadata:\n- Transaction ID: TX-NGA-2021-0303\n- Account ID: ACC-CORP-1011\n- Customer Name: Kudirat Logistics Ltd\n- DOB (KYC): None\n- Amount: 7,500,000.00 NGN\n- Timestamp: 2021-08-14T11:20:00Z\n- Flag Reason: CORPORATE_CASH_THRESHOLD\n\nGenerate a comprehensive InvestigationPlan.",
+      "schema": "InvestigationPlan",
+      "system": "You are RegGuard AI, an expert compliance investigator operating under Nigeria's Central Bank of Nigeria (CBN) AML/CFT Regulations 2022.\n\nYour duty:\n1. Decompose flagged transactions into rigorous, non-speculative investigation hypotheses.\n2. Formulate factual questions covering statutory reporting thresholds (N5M individual / N10M corporate), PEP exposure, and transaction structuring (smurfing within 48-72h).\n3. Schedule initial tool calls:\n   - 'regulation_search': to retrieve relevant CBN regulatory clauses from Qdrant.\n   - 'query_transactions': to execute read-only SQL queries over transaction history.\n   - 'watchlist_lookup': to check PEP/sanctions records with DOB and alias checks.\n   - 'threshold_calc': to evaluate mathematical turnover against limits.\n\nNever guess or assume customer innocence or guilt. Focus entirely on verifiable evidence."
+    },
+    "key": "1a751bfc9cf3dba13a9314a6c2c18c809a8a49a48a771da55035280b63079703",
+    "metadata": {},
+    "node_name": "plan",
+    "output_payload": {
+      "hypotheses": [
+        "Hypothesis 1: Corporate cash deposit of N7,500,000 exceeds statutory reporting limit under CBN regulations.",
+        "Hypothesis 2: Applicable threshold must be determined under governing regulation in force at transaction date.",
+        "Hypothesis 3: Commercial freight proceeds without transaction structuring."
+      ],
+      "initial_questions": [
+        "Retrieve corporate cash deposit transaction records for ACC-CORP-1011.",
+        "Identify applicable CBN cash transaction threshold regulation."
+      ],
+      "planned_tool_calls": [
+        {
+          "parameters": {
+            "sql_query": "SELECT * FROM transactions WHERE account_id = 'ACC-CORP-1011' ORDER BY timestamp ASC;"
+          },
+          "tool_name": "query_transactions"
+        },
+        {
+          "parameters": {
+            "query": "Cash Transaction Reporting Thresholds"
+          },
+          "tool_name": "regulation_search"
+        }
+      ]
+    },
+    "recorded_at": "2026-11-02T04:05:10.014857+00:00",
+    "schema_name": "InvestigationPlan"
+  },
+  "444adf368f11a3cabd1f37c77d1bc5a0270a544609bf73410e5e4f715e0206d1": {
+    "input_payload": {
+      "prompt": "Evaluate the current investigation evidence ledger for this case:\nFlagged Transaction:\n- ID: TX-NGA-2021-0303\n- Customer: Kudirat Logistics Ltd\n- KYC DOB: None\n- Amount: 7500000.0 NGN\n- Timestamp: 2021-08-14T11:20:00Z\n- Flag: CORPORATE_CASH_THRESHOLD\n\nCurrent Iteration Retry: 0 / Max Retries: 1\nCurrent Unresolved Questions: ['Retrieve corporate cash deposit transaction records for ACC-CORP-1011.', 'Identify applicable CBN cash transaction threshold regulation.']\n\nEvidence Claims Ledger:\n[\n  {\n    \"claim_id\": \"CLM-TX-001\",\n    \"text\": \"Retrieved 1 transactions for account ACC-CORP-1011 totaling N7,500,000.00.\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"ACC-ACC-CORP-1011\"\n    ]\n  }\n]\n\nProvide a rigorous CritiqueDecision.",
+      "schema": "CritiqueDecision",
+      "system": "You are RegGuard AI's anti-hallucination verification engine.\nYour single most critical mandate: DOES THE EVIDENCE IN THE LEDGER STRICTLY SUPPORT THE HYPOTHESES?\nIf not, you MUST mark evidence as insufficient, ambiguous, or contradicted \u2014 DO NOT GUESS.\n\nApply three non-negotiable compliance verification checks:\n1. TEMPORAL CONSISTENCY:\n   Verify that transaction timestamp is on or after the effective date of any cited regulation clause.\n   If a 2021 transaction cites a 2022 regulation, this is a FATAL TEMPORAL CONTRADICTION. Mark assessment=\"CONTRADICTED\", sufficient=false.\n2. ENTITY & DEMOGRAPHIC INTEGRITY:\n   If a watchlist match is found with high name similarity, verify secondary attributes (DOB, nationality).\n   If there is a significant DOB discrepancy (e.g. 1994 vs 1961), you CANNOT conclude innocence or guilt without secondary corroboration. Mark assessment=\"INSUFFICIENT\" or \"AMBIGUOUS\", sufficient=false.\n3. EVIDENTIARY COMPLETENESS:\n   Every statutory conclusion (e.g. structuring) must be mathematically substantiated by concrete transaction rows and active regulation clauses.\n\nIf any check fails or is incomplete, set sufficient=false and specify the exact missing evidence in 'missing'."
+    },
+    "key": "444adf368f11a3cabd1f37c77d1bc5a0270a544609bf73410e5e4f715e0206d1",
+    "metadata": {},
+    "node_name": "critique",
+    "output_payload": {
+      "assessment": "CONTRADICTED",
+      "detected_contradictions": [
+        "Transaction timestamp 2021-08-14 predates effective date 2022-11-01 of cited clause CBN-AML-2022-SEC-10-1"
+      ],
+      "missing": [
+        "applicable corporate cash threshold regulation in force prior to 2021-08-14"
+      ],
+      "reason": "Temporal contradiction detected: Transaction timestamp (2021-08-14) predates effective date (2022-11-01) of cited CBN AML/CFT Regulations 2022 Section 10(1).",
+      "sufficient": false,
+      "suggested_queries": [
+        {
+          "parameters": {
+            "effective_before": "2021-08-14",
+            "query": "corporate cash deposit limit"
+          },
+          "tool_name": "regulation_search"
+        }
+      ]
+    },
+    "recorded_at": "2026-11-02T04:05:10.021248+00:00",
+    "schema_name": "CritiqueDecision"
+  },
+  "4b4823b460823cda0c8f718cea65fa8dd9d1dd9f623a37b5e9bc5e1f4bff6a81": {
+    "input_payload": {
+      "prompt": "Evaluate the current investigation evidence ledger for this case:\nFlagged Transaction:\n- ID: TX-NGA-2021-0303\n- Customer: Kudirat Logistics Ltd\n- KYC DOB: None\n- Amount: 7500000.0 NGN\n- Timestamp: 2021-08-14T11:20:00Z\n- Flag: CORPORATE_CASH_THRESHOLD\n\nCurrent Iteration Retry: 1 / Max Retries: 1\nCurrent Unresolved Questions: ['Retrieve corporate cash deposit transaction records for ACC-CORP-1011.', 'Identify applicable CBN cash transaction threshold regulation.', 'applicable corporate cash threshold regulation in force prior to 2021-08-14']\n\nEvidence Claims Ledger:\n[\n  {\n    \"claim_id\": \"CLM-TX-001\",\n    \"text\": \"Retrieved 1 transactions for account ACC-CORP-1011 totaling N7,500,000.00.\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"ACC-ACC-CORP-1011\"\n    ]\n  },\n  {\n    \"claim_id\": \"CLM-REG-002\",\n    \"text\": \"Applicable CBN Regulation: [CBN-AML-2022-SEC-10-1] Cash Transaction Reporting Thresholds: No financial institution or designated non-financial business and profession shall make or receive any cash transaction exceeding N5,000,000 or its equivalent for an individual or N10,000,000 or its equivalent for a body corporate, unless a report is filed with the NFIU within seven days of the transaction.\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"CBN-AML-2022-SEC-10-1\"\n    ]\n  },\n  {\n    \"claim_id\": \"CLM-REG-003\",\n    \"text\": \"Applicable CBN Regulation: [CBN-AML-2013-SEC-02-1] Cash Transaction Limit (Historic 2013 Regulation): Under the 2013 Regulations, no individual shall make or accept cash payments exceeding N5,000,000 and no body corporate shall make or accept cash payments exceeding N10,000,000 unless through a financial institution.\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"CBN-AML-2013-SEC-02-1\"\n    ]\n  },\n  {\n    \"claim_id\": \"CLM-CALC-004\",\n    \"text\": \"Threshold analysis: Aggregate turnover N7,500,000.00 (Breached: False, Structuring: False).\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"CBN-AML-2013-SEC-02\"\n    ]\n  }\n]\n\nProvide a rigorous CritiqueDecision.",
+      "schema": "CritiqueDecision",
+      "system": "You are RegGuard AI's anti-hallucination verification engine.\nYour single most critical mandate: DOES THE EVIDENCE IN THE LEDGER STRICTLY SUPPORT THE HYPOTHESES?\nIf not, you MUST mark evidence as insufficient, ambiguous, or contradicted \u2014 DO NOT GUESS.\n\nApply three non-negotiable compliance verification checks:\n1. TEMPORAL CONSISTENCY:\n   Verify that transaction timestamp is on or after the effective date of any cited regulation clause.\n   If a 2021 transaction cites a 2022 regulation, this is a FATAL TEMPORAL CONTRADICTION. Mark assessment=\"CONTRADICTED\", sufficient=false.\n2. ENTITY & DEMOGRAPHIC INTEGRITY:\n   If a watchlist match is found with high name similarity, verify secondary attributes (DOB, nationality).\n   If there is a significant DOB discrepancy (e.g. 1994 vs 1961), you CANNOT conclude innocence or guilt without secondary corroboration. Mark assessment=\"INSUFFICIENT\" or \"AMBIGUOUS\", sufficient=false.\n3. EVIDENTIARY COMPLETENESS:\n   Every statutory conclusion (e.g. structuring) must be mathematically substantiated by concrete transaction rows and active regulation clauses.\n\nIf any check fails or is incomplete, set sufficient=false and specify the exact missing evidence in 'missing'."
+    },
+    "key": "4b4823b460823cda0c8f718cea65fa8dd9d1dd9f623a37b5e9bc5e1f4bff6a81",
+    "metadata": {},
+    "node_name": "critique",
+    "output_payload": {
+      "assessment": "SATISFIED",
+      "detected_contradictions": [],
+      "missing": [],
+      "reason": "Temporal alignment verified. Applicable governing law at transaction time was CBN AML/CFT Regulations 2013 Section 2(1). Corporate cash deposit of N7,500,000 does not breach N10,000,000 statutory limit.",
+      "sufficient": true,
+      "suggested_queries": []
+    },
+    "recorded_at": "2026-11-01T20:15:19.458591+00:00",
+    "schema_name": "CritiqueDecision"
+  },
+  "8c62cfa34f8b0119e86d0d972657bdf830119f6410dc427ec7b569abc4dee54f": {
+    "input_payload": {
+      "prompt": "Evaluate the current investigation evidence ledger for this case:\nFlagged Transaction:\n- ID: TX-NGA-2021-0303\n- Customer: Kudirat Logistics Ltd\n- KYC DOB: None\n- Amount: 7500000.0 NGN\n- Timestamp: 2021-08-14T11:20:00Z\n- Flag: CORPORATE_CASH_THRESHOLD\n\nCurrent Iteration Retry: 0 / Max Retries: 1\nCurrent Unresolved Questions: ['Retrieve corporate cash deposit transaction records for ACC-CORP-1011.', 'Identify applicable CBN cash transaction threshold regulation.']\n\nEvidence Claims Ledger:\n[\n  {\n    \"claim_id\": \"CLM-TX-001\",\n    \"text\": \"Retrieved 1 transactions for account ACC-CORP-1011 totaling N7,500,000.00.\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"ACC-ACC-CORP-1011\"\n    ]\n  },\n  {\n    \"claim_id\": \"CLM-REG-002\",\n    \"text\": \"Applicable CBN Regulation: [CBN-AML-2022-SEC-10-1] Cash Transaction Reporting Thresholds: No financial institution or designated non-financial business and profession shall make or receive any cash transaction exceeding N5,000,000 or its equivalent for an individual or N10,000,000 or its equivalent for a body corporate, unless a report is filed with the NFIU within seven days of the transaction.\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"CBN-AML-2022-SEC-10-1\"\n    ]\n  }\n]\n\nProvide a rigorous CritiqueDecision.",
+      "schema": "CritiqueDecision",
+      "system": "You are RegGuard AI's anti-hallucination verification engine.\nYour single most critical mandate: DOES THE EVIDENCE IN THE LEDGER STRICTLY SUPPORT THE HYPOTHESES?\nIf not, you MUST mark evidence as insufficient, ambiguous, or contradicted \u2014 DO NOT GUESS.\n\nApply three non-negotiable compliance verification checks:\n1. TEMPORAL CONSISTENCY:\n   Verify that transaction timestamp is on or after the effective date of any cited regulation clause.\n   If a 2021 transaction cites a 2022 regulation, this is a FATAL TEMPORAL CONTRADICTION. Mark assessment=\"CONTRADICTED\", sufficient=false.\n2. ENTITY & DEMOGRAPHIC INTEGRITY:\n   If a watchlist match is found with high name similarity, verify secondary attributes (DOB, nationality).\n   If there is a significant DOB discrepancy (e.g. 1994 vs 1961), you CANNOT conclude innocence or guilt without secondary corroboration. Mark assessment=\"INSUFFICIENT\" or \"AMBIGUOUS\", sufficient=false.\n3. EVIDENTIARY COMPLETENESS:\n   Every statutory conclusion (e.g. structuring) must be mathematically substantiated by concrete transaction rows and active regulation clauses.\n\nIf any check fails or is incomplete, set sufficient=false and specify the exact missing evidence in 'missing'."
+    },
+    "key": "8c62cfa34f8b0119e86d0d972657bdf830119f6410dc427ec7b569abc4dee54f",
+    "metadata": {},
+    "node_name": "critique",
+    "output_payload": {
+      "assessment": "CONTRADICTED",
+      "detected_contradictions": [
+        "Transaction timestamp 2021-08-14 predates effective date 2022-11-01 of cited clause CBN-AML-2022-SEC-10-1"
+      ],
+      "missing": [
+        "applicable corporate cash threshold regulation in force prior to 2021-08-14"
+      ],
+      "reason": "Temporal contradiction detected: Transaction timestamp (2021-08-14) predates effective date (2022-11-01) of cited CBN AML/CFT Regulations 2022 Section 10(1).",
+      "sufficient": false,
+      "suggested_queries": [
+        {
+          "parameters": {
+            "effective_before": "2021-08-14",
+            "query": "corporate cash deposit limit"
+          },
+          "tool_name": "regulation_search"
+        }
+      ]
+    },
+    "recorded_at": "2026-11-01T20:15:19.446255+00:00",
+    "schema_name": "CritiqueDecision"
+  },
+  "a1a7d3f48a2f9c53b43ff5cdf61aac1068e0ffe178798edc85b78ca46a9c63a6": {
+    "input_payload": {
+      "prompt": "Evaluate the current investigation evidence ledger for this case:\nFlagged Transaction:\n- ID: TX-NGA-2021-0303\n- Customer: Kudirat Logistics Ltd\n- KYC DOB: None\n- Amount: 7500000.0 NGN\n- Timestamp: 2021-08-14T11:20:00Z\n- Flag: CORPORATE_CASH_THRESHOLD\n\nCurrent Iteration Retry: 1 / Max Retries: 1\nCurrent Unresolved Questions: ['Retrieve corporate cash deposit transaction records for ACC-CORP-1011.', 'Identify applicable CBN cash transaction threshold regulation.', 'applicable corporate cash threshold regulation in force prior to 2021-08-14']\n\nEvidence Claims Ledger:\n[\n  {\n    \"claim_id\": \"CLM-TX-001\",\n    \"text\": \"Retrieved 1 transactions for account ACC-CORP-1011 totaling N7,500,000.00.\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"ACC-ACC-CORP-1011\"\n    ]\n  },\n  {\n    \"claim_id\": \"CLM-CALC-002\",\n    \"text\": \"Threshold analysis: Aggregate turnover N7,500,000.00 (Breached: False, Structuring: False).\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"CBN-AML-2013-SEC-02\"\n    ]\n  }\n]\n\nProvide a rigorous CritiqueDecision.",
+      "schema": "CritiqueDecision",
+      "system": "You are RegGuard AI's anti-hallucination verification engine.\nYour single most critical mandate: DOES THE EVIDENCE IN THE LEDGER STRICTLY SUPPORT THE HYPOTHESES?\nIf not, you MUST mark evidence as insufficient, ambiguous, or contradicted \u2014 DO NOT GUESS.\n\nApply three non-negotiable compliance verification checks:\n1. TEMPORAL CONSISTENCY:\n   Verify that transaction timestamp is on or after the effective date of any cited regulation clause.\n   If a 2021 transaction cites a 2022 regulation, this is a FATAL TEMPORAL CONTRADICTION. Mark assessment=\"CONTRADICTED\", sufficient=false.\n2. ENTITY & DEMOGRAPHIC INTEGRITY:\n   If a watchlist match is found with high name similarity, verify secondary attributes (DOB, nationality).\n   If there is a significant DOB discrepancy (e.g. 1994 vs 1961), you CANNOT conclude innocence or guilt without secondary corroboration. Mark assessment=\"INSUFFICIENT\" or \"AMBIGUOUS\", sufficient=false.\n3. EVIDENTIARY COMPLETENESS:\n   Every statutory conclusion (e.g. structuring) must be mathematically substantiated by concrete transaction rows and active regulation clauses.\n\nIf any check fails or is incomplete, set sufficient=false and specify the exact missing evidence in 'missing'."
+    },
+    "key": "a1a7d3f48a2f9c53b43ff5cdf61aac1068e0ffe178798edc85b78ca46a9c63a6",
+    "metadata": {},
+    "node_name": "critique",
+    "output_payload": {
+      "assessment": "SATISFIED",
+      "detected_contradictions": [],
+      "missing": [],
+      "reason": "Temporal alignment verified. Applicable governing law at transaction time was CBN AML/CFT Regulations 2013 Section 2(1). Corporate cash deposit of N7,500,000 does not breach N10,000,000 statutory limit.",
+      "sufficient": true,
+      "suggested_queries": []
+    },
+    "recorded_at": "2026-11-02T04:05:10.027114+00:00",
+    "schema_name": "CritiqueDecision"
+  }
+}

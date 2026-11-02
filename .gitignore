@@ -21,3 +21,6 @@ Thumbs.db
 *.log
 data/*.db
 data/qdrant_storage/
+*.pytest_cache/
+
+

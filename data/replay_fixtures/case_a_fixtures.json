@@ -1,0 +1,96 @@
+{
+  "35d54ecedb1926410586a61b86be6009bb53001d8e9a211c7a35d868feb72f54": {
+    "input_payload": {
+      "prompt": "Investigate the following flagged transaction:\nJurisdiction: NGA_CBN\nTransaction Metadata:\n- Transaction ID: TX-NGA-2023-0101\n- Account ID: ACC-IND-9021\n- Customer Name: Emeka Okafor\n- DOB (KYC): 1985-06-20\n- Amount: 1,850,000.00 NGN\n- Timestamp: 2023-01-02T11:45:00Z\n- Flag Reason: RAPID_AGGREGATION_STRUCTURING\n\nGenerate a comprehensive InvestigationPlan.",
+      "schema": "InvestigationPlan",
+      "system": "You are RegGuard AI, an expert compliance investigator operating under Nigeria's Central Bank of Nigeria (CBN) AML/CFT Regulations 2022.\n\nYour duty:\n1. Decompose flagged transactions into rigorous, non-speculative investigation hypotheses.\n2. Formulate factual questions covering statutory reporting thresholds (N5M individual / N10M corporate), PEP exposure, and transaction structuring (smurfing within 48-72h).\n3. Schedule initial tool calls:\n   - 'regulation_search': to retrieve relevant CBN regulatory clauses from Qdrant.\n   - 'query_transactions': to execute read-only SQL queries over transaction history.\n   - 'watchlist_lookup': to check PEP/sanctions records with DOB and alias checks.\n   - 'threshold_calc': to evaluate mathematical turnover against limits.\n\nNever guess or assume customer innocence or guilt. Focus entirely on verifiable evidence."
+    },
+    "key": "35d54ecedb1926410586a61b86be6009bb53001d8e9a211c7a35d868feb72f54",
+    "metadata": {},
+    "node_name": "plan",
+    "output_payload": {
+      "hypotheses": [
+        "Hypothesis 1: Customer Emeka Okafor is structuring multiple cash deposits below N5,000,000.",
+        "Hypothesis 2: Aggregate deposits within rolling 48-72h breach statutory CBN cash limits.",
+        "Hypothesis 3: Activity mandates filing a Suspicious Transaction Report (STR)."
+      ],
+      "initial_questions": [
+        "Retrieve historical transactions for account ACC-IND-9021 in 48-hour window.",
+        "Calculate aggregate cash deposit turnover.",
+        "Verify CBN Section 10 structuring clauses."
+      ],
+      "planned_tool_calls": [
+        {
+          "parameters": {
+            "sql_query": "SELECT * FROM transactions WHERE account_id = 'ACC-IND-9021' ORDER BY timestamp ASC;"
+          },
+          "tool_name": "query_transactions"
+        },
+        {
+          "parameters": {
+            "amounts": [
+              1900000.0,
+              1750000.0,
+              1850000.0
+            ],
+            "entity_type": "INDIVIDUAL",
+            "timestamps": [
+              "2023-01-01 10:15:00",
+              "2023-01-01 16:30:00",
+              "2023-01-02 11:45:00"
+            ]
+          },
+          "tool_name": "threshold_calc"
+        },
+        {
+          "parameters": {
+            "query": "prohibition of structuring and smurfing cash deposits"
+          },
+          "tool_name": "regulation_search"
+        }
+      ]
+    },
+    "recorded_at": "2026-11-02T04:05:09.984740+00:00",
+    "schema_name": "InvestigationPlan"
+  },
+  "8666261198e6f2e2920e989c0e06e51d4183a80a1a4afee9bbdbdb6af837e00f": {
+    "input_payload": {
+      "prompt": "Evaluate the current investigation evidence ledger for this case:\nFlagged Transaction:\n- ID: TX-NGA-2023-0101\n- Customer: Emeka Okafor\n- KYC DOB: 1985-06-20\n- Amount: 1850000.0 NGN\n- Timestamp: 2023-01-02T11:45:00Z\n- Flag: RAPID_AGGREGATION_STRUCTURING\n\nCurrent Iteration Retry: 0 / Max Retries: 1\nCurrent Unresolved Questions: ['Retrieve historical transactions for account ACC-IND-9021 in 48-hour window.', 'Calculate aggregate cash deposit turnover.', 'Verify CBN Section 10 structuring clauses.']\n\nEvidence Claims Ledger:\n[\n  {\n    \"claim_id\": \"CLM-TX-001\",\n    \"text\": \"Retrieved 3 transactions for account ACC-IND-9021 totaling N5,500,000.00.\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"ACC-ACC-IND-9021\"\n    ]\n  },\n  {\n    \"claim_id\": \"CLM-CALC-002\",\n    \"text\": \"Threshold analysis: Aggregate turnover N5,500,000.00 (Breached: True, Structuring: True).\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"CBN-AML-2022-SEC-10\"\n    ]\n  },\n  {\n    \"claim_id\": \"CLM-REG-003\",\n    \"text\": \"Applicable CBN Regulation: [CBN-AML-2022-SEC-10-3] Prohibition of Structuring and Smurfing: A financial institution shall closely monitor and report multiple transactions that individually fall below the statutory threshold of N5,000,000 (individual) or N10,000,000 (corporate) but in aggregate exceed the threshold within a rolling 48-hour to 72-hour period, where the transactions appear intentionally structured or smurfed to evade statutory reporting. Such activity mandates filing a Suspicious Transaction Report (STR) within 24 hours.\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"CBN-AML-2022-SEC-10-3\"\n    ]\n  }\n]\n\nProvide a rigorous CritiqueDecision.",
+      "schema": "CritiqueDecision",
+      "system": "You are RegGuard AI's anti-hallucination verification engine.\nYour single most critical mandate: DOES THE EVIDENCE IN THE LEDGER STRICTLY SUPPORT THE HYPOTHESES?\nIf not, you MUST mark evidence as insufficient, ambiguous, or contradicted \u2014 DO NOT GUESS.\n\nApply three non-negotiable compliance verification checks:\n1. TEMPORAL CONSISTENCY:\n   Verify that transaction timestamp is on or after the effective date of any cited regulation clause.\n   If a 2021 transaction cites a 2022 regulation, this is a FATAL TEMPORAL CONTRADICTION. Mark assessment=\"CONTRADICTED\", sufficient=false.\n2. ENTITY & DEMOGRAPHIC INTEGRITY:\n   If a watchlist match is found with high name similarity, verify secondary attributes (DOB, nationality).\n   If there is a significant DOB discrepancy (e.g. 1994 vs 1961), you CANNOT conclude innocence or guilt without secondary corroboration. Mark assessment=\"INSUFFICIENT\" or \"AMBIGUOUS\", sufficient=false.\n3. EVIDENTIARY COMPLETENESS:\n   Every statutory conclusion (e.g. structuring) must be mathematically substantiated by concrete transaction rows and active regulation clauses.\n\nIf any check fails or is incomplete, set sufficient=false and specify the exact missing evidence in 'missing'."
+    },
+    "key": "8666261198e6f2e2920e989c0e06e51d4183a80a1a4afee9bbdbdb6af837e00f",
+    "metadata": {},
+    "node_name": "critique",
+    "output_payload": {
+      "assessment": "SATISFIED",
+      "detected_contradictions": [],
+      "missing": [],
+      "reason": "Customer Emeka Okafor conducted 3 cash deposits totaling N5,500,000.00 within 25.5 hours, structuring to evade statutory individual limit of N5,000,000 under CBN AML/CFT 2022 Section 10(3).",
+      "sufficient": true,
+      "suggested_queries": []
+    },
+    "recorded_at": "2026-11-01T20:15:19.401168+00:00",
+    "schema_name": "CritiqueDecision"
+  },
+  "97b21f8f52a9ea42a049f8b54f11a7b72db961200679aa2c2ffd29d04f1919c7": {
+    "input_payload": {
+      "prompt": "Evaluate the current investigation evidence ledger for this case:\nFlagged Transaction:\n- ID: TX-NGA-2023-0101\n- Customer: Emeka Okafor\n- KYC DOB: 1985-06-20\n- Amount: 1850000.0 NGN\n- Timestamp: 2023-01-02T11:45:00Z\n- Flag: RAPID_AGGREGATION_STRUCTURING\n\nCurrent Iteration Retry: 0 / Max Retries: 1\nCurrent Unresolved Questions: ['Retrieve historical transactions for account ACC-IND-9021 in 48-hour window.', 'Calculate aggregate cash deposit turnover.', 'Verify CBN Section 10 structuring clauses.']\n\nEvidence Claims Ledger:\n[\n  {\n    \"claim_id\": \"CLM-TX-001\",\n    \"text\": \"Retrieved 3 transactions for account ACC-IND-9021 totaling N5,500,000.00.\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"ACC-ACC-IND-9021\"\n    ]\n  },\n  {\n    \"claim_id\": \"CLM-CALC-002\",\n    \"text\": \"Threshold analysis: Aggregate turnover N5,500,000.00 (Breached: True, Structuring: True).\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"CBN-AML-2022-SEC-10\"\n    ]\n  }\n]\n\nProvide a rigorous CritiqueDecision.",
+      "schema": "CritiqueDecision",
+      "system": "You are RegGuard AI's anti-hallucination verification engine.\nYour single most critical mandate: DOES THE EVIDENCE IN THE LEDGER STRICTLY SUPPORT THE HYPOTHESES?\nIf not, you MUST mark evidence as insufficient, ambiguous, or contradicted \u2014 DO NOT GUESS.\n\nApply three non-negotiable compliance verification checks:\n1. TEMPORAL CONSISTENCY:\n   Verify that transaction timestamp is on or after the effective date of any cited regulation clause.\n   If a 2021 transaction cites a 2022 regulation, this is a FATAL TEMPORAL CONTRADICTION. Mark assessment=\"CONTRADICTED\", sufficient=false.\n2. ENTITY & DEMOGRAPHIC INTEGRITY:\n   If a watchlist match is found with high name similarity, verify secondary attributes (DOB, nationality).\n   If there is a significant DOB discrepancy (e.g. 1994 vs 1961), you CANNOT conclude innocence or guilt without secondary corroboration. Mark assessment=\"INSUFFICIENT\" or \"AMBIGUOUS\", sufficient=false.\n3. EVIDENTIARY COMPLETENESS:\n   Every statutory conclusion (e.g. structuring) must be mathematically substantiated by concrete transaction rows and active regulation clauses.\n\nIf any check fails or is incomplete, set sufficient=false and specify the exact missing evidence in 'missing'."
+    },
+    "key": "97b21f8f52a9ea42a049f8b54f11a7b72db961200679aa2c2ffd29d04f1919c7",
+    "metadata": {},
+    "node_name": "critique",
+    "output_payload": {
+      "assessment": "SATISFIED",
+      "detected_contradictions": [],
+      "missing": [],
+      "reason": "Customer Emeka Okafor conducted 3 cash deposits totaling N5,500,000.00 within 25.5 hours, structuring to evade statutory individual limit of N5,000,000 under CBN AML/CFT 2022 Section 10(3).",
+      "sufficient": true,
+      "suggested_queries": []
+    },
+    "recorded_at": "2026-11-02T04:05:09.997373+00:00",
+    "schema_name": "CritiqueDecision"
+  }
+}

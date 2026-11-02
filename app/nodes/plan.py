@@ -2,29 +2,27 @@ from datetime import datetime, timezone
 from typing import Any, Dict
 from app.state import InvestigationState
 from app.events import EventType, create_event
+from app.prompts import InvestigationPlan, PLAN_SYSTEM_PROMPT, build_plan_prompt
+from core.llm_adapter import get_llm_provider
 
 def plan_node(state: InvestigationState) -> Dict[str, Any]:
     """
-    Decomposes the flagged transaction into investigative questions and hypotheses.
+    Decomposes the flagged transaction into investigative hypotheses and schedules
+    initial tool calls using LLM reasoning.
     """
     case_id = state["case_id"]
     seq = state.get("last_event_sequence", 0)
     tx = state["flagged_transaction"]
     customer = tx.get("customer_name", "Unknown")
-    amount = tx.get("amount", 0)
-    currency = tx.get("currency", "NGN")
     
-    hypotheses = [
-        f"Hypothesis 1: Customer {customer} has active PEP exposure violating CBN AML/CFT EDD requirements.",
-        f"Hypothesis 2: Inward transaction of {amount:,.2f} {currency} exceeds statutory reporting limits.",
-        "Hypothesis 3: Transaction intent lacks underlying economic or commercial substance."
-    ]
-    
-    initial_unresolved = [
-        "Verify customer name against PEP/Sanctions watchlist.",
-        "Verify secondary KYC identifiers (DOB, BVN, Nationality).",
-        "Evaluate statutory reporting threshold under CBN AML Regulations."
-    ]
+    # 1. Invoke LLM structured plan generator
+    llm = get_llm_provider(mode=state.get("mode"))
+    prompt = build_plan_prompt(tx, state.get("jurisdiction", "NGA_CBN"))
+    plan: InvestigationPlan = llm.complete_structured(
+        schema=InvestigationPlan,
+        prompt=prompt,
+        system=PLAN_SYSTEM_PROMPT
+    )
     
     events = [
         create_event(
@@ -34,8 +32,9 @@ def plan_node(state: InvestigationState) -> Dict[str, Any]:
             payload={
                 "from_node": state.get("current_node", "START"),
                 "to_node": "plan",
-                "hypotheses": hypotheses,
-                "message": f"Decomposed transaction for {customer} into {len(hypotheses)} investigative hypotheses."
+                "provider": llm.provider_name,
+                "hypotheses": plan.hypotheses,
+                "message": f"Decomposed transaction for {customer} into {len(plan.hypotheses)} investigative hypotheses."
             }
         ),
         create_event(
@@ -43,7 +42,7 @@ def plan_node(state: InvestigationState) -> Dict[str, Any]:
             sequence_number=seq + 2,
             investigation_id=case_id,
             payload={
-                "unresolved_questions": initial_unresolved,
+                "unresolved_questions": plan.initial_questions,
                 "phase": "initial_planning"
             }
         )
@@ -51,7 +50,8 @@ def plan_node(state: InvestigationState) -> Dict[str, Any]:
     
     return {
         "current_node": "plan",
-        "unresolved_questions": initial_unresolved,
+        "unresolved_questions": plan.initial_questions,
+        "planned_queries": [call.model_dump() for call in plan.planned_tool_calls],
         "last_event_sequence": seq + len(events),
         "event_log": events,
     }

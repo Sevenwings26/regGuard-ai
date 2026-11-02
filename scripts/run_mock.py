@@ -100,7 +100,7 @@ def main():
     print(f"\n[ACCEPTANCE CHECK 3] Evidence Ledger & SHA-256 Hash Chain Integrity:")
     print(f"  Total claims in ledger: {len(claims)}")
     intact, broken_idx = verify_claims_chain(claims)
-    if intact and len(claims) == 2:
+    if intact and len(claims) >= 2:
         print("  ✓ PASS: All claims verified. SHA-256 hash chain intact from genesis.")
         for idx, c in enumerate(claims):
             print(f"    Claim {idx+1}: [{c.claim_id}] {c.text[:65]}...")

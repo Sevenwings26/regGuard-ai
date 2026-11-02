@@ -1,0 +1,41 @@
+{
+  "case_id": "CASE-A-STRUCTURING",
+  "jurisdiction": "NGA_CBN",
+  "flagged_transaction": {
+    "transaction_id": "TX-NGA-2023-0101",
+    "account_id": "ACC-IND-9021",
+    "customer_name": "Emeka Okafor",
+    "dob": "1985-06-20",
+    "bvn": "22145567890",
+    "nationality": "NGA",
+    "amount": 1850000.00,
+    "currency": "NGN",
+    "timestamp": "2023-01-02T11:45:00Z",
+    "flag_reason": "RAPID_AGGREGATION_STRUCTURING"
+  },
+  "mock_responses": {
+    "iteration_1": {
+      "act": {
+        "transactions_retrieved": 3,
+        "aggregate_amount": 5500000.00,
+        "time_window_hours": 25.5,
+        "structuring_detected": true,
+        "cited_regulation": "CBN-AML-2022-SEC-10-3"
+      },
+      "critique": {
+        "sufficient": true,
+        "assessment": "SATISFIED",
+        "reason": "Customer Emeka Okafor conducted 3 cash deposits totaling N5,500,000.00 within 25.5 hours. Mathematical aggregation proves structuring to evade statutory individual limit of N5,000,000 under CBN AML/CFT Regulations 2022 Section 10(3).",
+        "missing": [],
+        "detected_contradictions": []
+      }
+    },
+    "synthesis": {
+      "action": "conclude",
+      "disposition": "DRAFT_STR",
+      "summary": "Investigation into transaction TX-NGA-2023-0101 established intentional structuring of multiple cash deposits below N5,000,000 aggregating to N5,500,000 within 25.5 hours, violating CBN Sec 10(3).",
+      "violations_found": ["CBN-AML-2022-SEC-10-3"],
+      "recommended_action": "File Suspicious Transaction Report (STR) with NFIU within 24 hours."
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "case_id": "CASE-C-TEMPORAL",
+  "jurisdiction": "NGA_CBN",
+  "flagged_transaction": {
+    "transaction_id": "TX-NGA-2021-0303",
+    "account_id": "ACC-CORP-1011",
+    "customer_name": "Kudirat Logistics Ltd",
+    "dob": null,
+    "cac_rc_number": "RC-892101",
+    "nationality": "NGA",
+    "amount": 7500000.00,
+    "currency": "NGN",
+    "timestamp": "2021-08-14T11:20:00Z",
+    "flag_reason": "CORPORATE_CASH_THRESHOLD"
+  },
+  "mock_responses": {
+    "iteration_1": {
+      "act": {
+        "retrieved_clause": "CBN-AML-2022-SEC-10-1",
+        "clause_effective_date": "2022-11-01",
+        "transaction_timestamp": "2021-08-14T11:20:00Z",
+        "apparent_issue": "Clause enacted in November 2022 applied to August 2021 transaction"
+      },
+      "critique": {
+        "sufficient": false,
+        "assessment": "CONTRADICTED",
+        "reason": "Temporal contradiction detected: Transaction timestamp (2021-08-14) predates the effective date (2022-11-01) of cited CBN AML/CFT Regulations 2022 Section 10(1). The 2022 regulations were not in force at the time of the transaction.",
+        "missing": [
+          "applicable corporate cash threshold regulation in force prior to 2021-08-14"
+        ],
+        "detected_contradictions": [
+          "Transaction timestamp 2021-08-14 predates effective date 2022-11-01 of cited clause CBN-AML-2022-SEC-10-1"
+        ]
+      },
+      "refine": {
+        "action": "Reformulate regulatory search with strict temporal filter: effective_before='2021-08-14' to retrieve the governing historical regulation in force in August 2021."
+      }
+    },
+    "iteration_2": {
+      "act": {
+        "retrieved_clause": "CBN-AML-2013-SEC-02-1",
+        "clause_effective_date": "2013-01-15",
+        "corporate_threshold": 10000000.00,
+        "transaction_amount": 7500000.00,
+        "threshold_breached": false
+      },
+      "critique": {
+        "sufficient": true,
+        "assessment": "SATISFIED",
+        "reason": "Temporal alignment verified. Applicable governing law at transaction time was CBN AML/CFT Regulations 2013 Section 2(1) (effective 2013-01-15). Under the 2013 rules, the corporate cash threshold was N10,000,000.00. The transaction of N7,500,000.00 does not breach statutory limit.",
+        "missing": [],
+        "detected_contradictions": []
+      }
+    },
+    "synthesis": {
+      "action": "conclude",
+      "disposition": "CLEAR_NO_SUSPICION",
+      "summary": "Investigation into corporate deposit TX-NGA-2021-0303 concluded with no suspicion. Initial flag under 2022 rules was resolved: the governing regulation in force on 2021-08-14 was CBN 2013 Section 2(1) with a N10,000,000 limit. Deposit of N7,500,000 was fully compliant.",
+      "violations_found": [],
+      "recommended_action": "Clear compliance flag. No filing required."
+    }
+  }
+}

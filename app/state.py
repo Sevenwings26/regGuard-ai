@@ -112,3 +112,5 @@ class InvestigationState(TypedDict):
     final_status: FinalStatus
     critique_decision: Optional[Dict[str, Any]]
     audit_memo: Optional[Dict[str, Any]]
+    planned_queries: List[Dict[str, Any]]  # Scheduled tool calls passed from plan or refine to act node.
+    mode: Optional[str]  # Execution mode: "LIVE" or "CACHED"

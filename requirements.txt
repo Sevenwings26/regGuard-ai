@@ -6,3 +6,6 @@ sqlglot==26.4.0
 qdrant-client==1.12.1
 fastembed==0.9.1
 pytest==9.2.0
+fastapi==0.115.6
+uvicorn==0.34.0
+starlette==0.41.3

@@ -1,0 +1,129 @@
+{
+  "4988c6c286b5849e6ef8e65c812310db0791805ecc5464f6d33e1131506b18bd": {
+    "input_payload": {
+      "prompt": "Evaluate the current investigation evidence ledger for this case:\nFlagged Transaction:\n- ID: TX-NGA-2023-0202\n- Customer: Musa Ibrahim\n- KYC DOB: 1994-08-12\n- Amount: 8200000.0 NGN\n- Timestamp: 2023-02-15T09:40:00Z\n- Flag: PEP_NAME_MATCH\n\nCurrent Iteration Retry: 0 / Max Retries: 1\nCurrent Unresolved Questions: ['Verify customer name against PEP/Sanctions watchlist.', 'Verify secondary KYC identifiers (DOB, BVN, Nationality).', 'Evaluate statutory reporting threshold under CBN AML Regulations.']\n\nEvidence Claims Ledger:\n[\n  {\n    \"claim_id\": \"CLM-WL-001\",\n    \"text\": \"Customer KYC DOB (1994-08-12) conflicts with Watchlist PEP DOB (1961-04-03), indicating a demographic mismatch. Secondary profile check yielded no corroboration.\",\n    \"status\": \"insufficient\",\n    \"supporting_sources\": [\n      \"KYC-ACC-IND-4412\",\n      \"WL-PEP-NGA-041\"\n    ]\n  }\n]\n\nProvide a rigorous CritiqueDecision.",
+      "schema": "CritiqueDecision",
+      "system": "You are RegGuard AI's anti-hallucination verification engine.\nYour single most critical mandate: DOES THE EVIDENCE IN THE LEDGER STRICTLY SUPPORT THE HYPOTHESES?\nIf not, you MUST mark evidence as insufficient, ambiguous, or contradicted \u2014 DO NOT GUESS.\n\nApply three non-negotiable compliance verification checks:\n1. TEMPORAL CONSISTENCY:\n   Verify that transaction timestamp is on or after the effective date of any cited regulation clause.\n   If a 2021 transaction cites a 2022 regulation, this is a FATAL TEMPORAL CONTRADICTION. Mark assessment=\"CONTRADICTED\", sufficient=false.\n2. ENTITY & DEMOGRAPHIC INTEGRITY:\n   If a watchlist match is found with high name similarity, verify secondary attributes (DOB, nationality).\n   If there is a significant DOB discrepancy (e.g. 1994 vs 1961), you CANNOT conclude innocence or guilt without secondary corroboration. Mark assessment=\"INSUFFICIENT\" or \"AMBIGUOUS\", sufficient=false.\n3. EVIDENTIARY COMPLETENESS:\n   Every statutory conclusion (e.g. structuring) must be mathematically substantiated by concrete transaction rows and active regulation clauses.\n\nIf any check fails or is incomplete, set sufficient=false and specify the exact missing evidence in 'missing'."
+    },
+    "key": "4988c6c286b5849e6ef8e65c812310db0791805ecc5464f6d33e1131506b18bd",
+    "metadata": {},
+    "node_name": "critique",
+    "output_payload": {
+      "assessment": "AMBIGUOUS",
+      "detected_contradictions": [],
+      "missing": [
+        "historical transaction pattern"
+      ],
+      "reason": "watchlist ambiguity not resolved; transaction intent not established",
+      "sufficient": false,
+      "suggested_queries": []
+    },
+    "recorded_at": "2026-11-02T04:05:10.007841+00:00",
+    "schema_name": "CritiqueDecision"
+  },
+  "4ba97ec46d7d0934e1c9e9fe9f1986b744d7cfc2b672a0d3d4d358367a2ce178": {
+    "input_payload": {
+      "prompt": "Evaluate the current investigation evidence ledger for this case:\nFlagged Transaction:\n- ID: TX-NGA-2023-0202\n- Customer: Musa Ibrahim\n- KYC DOB: 1994-08-12\n- Amount: 8200000.0 NGN\n- Timestamp: 2023-02-15T09:40:00Z\n- Flag: PEP_NAME_MATCH\n\nCurrent Iteration Retry: 0 / Max Retries: 1\nCurrent Unresolved Questions: ['Verify customer name against PEP/Sanctions watchlist.', 'Verify secondary KYC identifiers (DOB, BVN, Nationality).', 'Evaluate statutory reporting threshold under CBN AML Regulations.']\n\nEvidence Claims Ledger:\n[\n  {\n    \"claim_id\": \"CLM-WL-001\",\n    \"text\": \"Customer KYC DOB (1994-08-12) conflicts with Watchlist PEP DOB (1961-04-03), indicating a demographic mismatch. Secondary profile check yielded no corroboration.\",\n    \"status\": \"insufficient\",\n    \"supporting_sources\": [\n      \"KYC-ACC-IND-4412\",\n      \"WL-PEP-NGA-041\"\n    ]\n  },\n  {\n    \"claim_id\": \"CLM-REG-002\",\n    \"text\": \"Applicable CBN Regulation: [CBN-AML-2022-SEC-18-1] Definition and Identification of Politically Exposed Persons (PEPs): Politically Exposed Persons (PEPs) include individuals who are or have been entrusted with prominent public functions in Nigeria or foreign countries, including Heads of State, State Governors, Commissioners, Ministers, Members of Parliament, senior judicial officials, and senior executives of state-owned corporations. Financial institutions must implement risk management systems to identify if a customer or beneficial owner is a PEP.\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"CBN-AML-2022-SEC-18-1\"\n    ]\n  }\n]\n\nProvide a rigorous CritiqueDecision.",
+      "schema": "CritiqueDecision",
+      "system": "You are RegGuard AI's anti-hallucination verification engine.\nYour single most critical mandate: DOES THE EVIDENCE IN THE LEDGER STRICTLY SUPPORT THE HYPOTHESES?\nIf not, you MUST mark evidence as insufficient, ambiguous, or contradicted \u2014 DO NOT GUESS.\n\nApply three non-negotiable compliance verification checks:\n1. TEMPORAL CONSISTENCY:\n   Verify that transaction timestamp is on or after the effective date of any cited regulation clause.\n   If a 2021 transaction cites a 2022 regulation, this is a FATAL TEMPORAL CONTRADICTION. Mark assessment=\"CONTRADICTED\", sufficient=false.\n2. ENTITY & DEMOGRAPHIC INTEGRITY:\n   If a watchlist match is found with high name similarity, verify secondary attributes (DOB, nationality).\n   If there is a significant DOB discrepancy (e.g. 1994 vs 1961), you CANNOT conclude innocence or guilt without secondary corroboration. Mark assessment=\"INSUFFICIENT\" or \"AMBIGUOUS\", sufficient=false.\n3. EVIDENTIARY COMPLETENESS:\n   Every statutory conclusion (e.g. structuring) must be mathematically substantiated by concrete transaction rows and active regulation clauses.\n\nIf any check fails or is incomplete, set sufficient=false and specify the exact missing evidence in 'missing'."
+    },
+    "key": "4ba97ec46d7d0934e1c9e9fe9f1986b744d7cfc2b672a0d3d4d358367a2ce178",
+    "metadata": {},
+    "node_name": "critique",
+    "output_payload": {
+      "assessment": "AMBIGUOUS",
+      "detected_contradictions": [],
+      "missing": [
+        "historical transaction pattern"
+      ],
+      "reason": "watchlist ambiguity not resolved; transaction intent not established",
+      "sufficient": false,
+      "suggested_queries": []
+    },
+    "recorded_at": "2026-11-01T20:15:19.422340+00:00",
+    "schema_name": "CritiqueDecision"
+  },
+  "847ae909de4be75bcc4af7877baf16fd00ed13390379b5ecda2558b99c835f6c": {
+    "input_payload": {
+      "prompt": "Evaluate the current investigation evidence ledger for this case:\nFlagged Transaction:\n- ID: TX-NGA-2023-0202\n- Customer: Musa Ibrahim\n- KYC DOB: 1994-08-12\n- Amount: 8200000.0 NGN\n- Timestamp: 2023-02-15T09:40:00Z\n- Flag: PEP_NAME_MATCH\n\nCurrent Iteration Retry: 1 / Max Retries: 1\nCurrent Unresolved Questions: ['Verify customer name against PEP/Sanctions watchlist.', 'Verify secondary KYC identifiers (DOB, BVN, Nationality).', 'Evaluate statutory reporting threshold under CBN AML Regulations.', 'historical transaction pattern']\n\nEvidence Claims Ledger:\n[\n  {\n    \"claim_id\": \"CLM-WL-001\",\n    \"text\": \"Customer KYC DOB (1994-08-12) conflicts with Watchlist PEP DOB (1961-04-03), indicating a demographic mismatch. Secondary profile check yielded no corroboration.\",\n    \"status\": \"insufficient\",\n    \"supporting_sources\": [\n      \"KYC-ACC-IND-4412\",\n      \"WL-PEP-NGA-041\"\n    ]\n  },\n  {\n    \"claim_id\": \"CLM-WL-002\",\n    \"text\": \"Customer KYC DOB (1994-08-12) conflicts with Watchlist PEP DOB (1961-04-03), indicating a demographic mismatch. Secondary profile check yielded no corroboration.\",\n    \"status\": \"insufficient\",\n    \"supporting_sources\": [\n      \"KYC-ACC-IND-4412\",\n      \"WL-PEP-NGA-041\"\n    ]\n  }\n]\n\nProvide a rigorous CritiqueDecision.",
+      "schema": "CritiqueDecision",
+      "system": "You are RegGuard AI's anti-hallucination verification engine.\nYour single most critical mandate: DOES THE EVIDENCE IN THE LEDGER STRICTLY SUPPORT THE HYPOTHESES?\nIf not, you MUST mark evidence as insufficient, ambiguous, or contradicted \u2014 DO NOT GUESS.\n\nApply three non-negotiable compliance verification checks:\n1. TEMPORAL CONSISTENCY:\n   Verify that transaction timestamp is on or after the effective date of any cited regulation clause.\n   If a 2021 transaction cites a 2022 regulation, this is a FATAL TEMPORAL CONTRADICTION. Mark assessment=\"CONTRADICTED\", sufficient=false.\n2. ENTITY & DEMOGRAPHIC INTEGRITY:\n   If a watchlist match is found with high name similarity, verify secondary attributes (DOB, nationality).\n   If there is a significant DOB discrepancy (e.g. 1994 vs 1961), you CANNOT conclude innocence or guilt without secondary corroboration. Mark assessment=\"INSUFFICIENT\" or \"AMBIGUOUS\", sufficient=false.\n3. EVIDENTIARY COMPLETENESS:\n   Every statutory conclusion (e.g. structuring) must be mathematically substantiated by concrete transaction rows and active regulation clauses.\n\nIf any check fails or is incomplete, set sufficient=false and specify the exact missing evidence in 'missing'."
+    },
+    "key": "847ae909de4be75bcc4af7877baf16fd00ed13390379b5ecda2558b99c835f6c",
+    "metadata": {},
+    "node_name": "critique",
+    "output_payload": {
+      "assessment": "AMBIGUOUS",
+      "detected_contradictions": [],
+      "missing": [
+        "historical transaction pattern"
+      ],
+      "reason": "watchlist ambiguity not resolved; transaction intent not established",
+      "sufficient": false,
+      "suggested_queries": []
+    },
+    "recorded_at": "2026-11-02T04:05:10.010165+00:00",
+    "schema_name": "CritiqueDecision"
+  },
+  "b389c1e1c5594a61a19c57caaa2f18912ba1364bde4593fd1ac1813f59d88baf": {
+    "input_payload": {
+      "prompt": "Evaluate the current investigation evidence ledger for this case:\nFlagged Transaction:\n- ID: TX-NGA-2023-0202\n- Customer: Musa Ibrahim\n- KYC DOB: 1994-08-12\n- Amount: 8200000.0 NGN\n- Timestamp: 2023-02-15T09:40:00Z\n- Flag: PEP_NAME_MATCH\n\nCurrent Iteration Retry: 1 / Max Retries: 1\nCurrent Unresolved Questions: ['Verify customer name against PEP/Sanctions watchlist.', 'Verify secondary KYC identifiers (DOB, BVN, Nationality).', 'Evaluate statutory reporting threshold under CBN AML Regulations.', 'historical transaction pattern']\n\nEvidence Claims Ledger:\n[\n  {\n    \"claim_id\": \"CLM-WL-001\",\n    \"text\": \"Customer KYC DOB (1994-08-12) conflicts with Watchlist PEP DOB (1961-04-03), indicating a demographic mismatch. Secondary profile check yielded no corroboration.\",\n    \"status\": \"insufficient\",\n    \"supporting_sources\": [\n      \"KYC-ACC-IND-4412\",\n      \"WL-PEP-NGA-041\"\n    ]\n  },\n  {\n    \"claim_id\": \"CLM-REG-002\",\n    \"text\": \"Applicable CBN Regulation: [CBN-AML-2022-SEC-18-1] Definition and Identification of Politically Exposed Persons (PEPs): Politically Exposed Persons (PEPs) include individuals who are or have been entrusted with prominent public functions in Nigeria or foreign countries, including Heads of State, State Governors, Commissioners, Ministers, Members of Parliament, senior judicial officials, and senior executives of state-owned corporations. Financial institutions must implement risk management systems to identify if a customer or beneficial owner is a PEP.\",\n    \"status\": \"supported\",\n    \"supporting_sources\": [\n      \"CBN-AML-2022-SEC-18-1\"\n    ]\n  },\n  {\n    \"claim_id\": \"CLM-WL-003\",\n    \"text\": \"Customer KYC DOB (1994-08-12) conflicts with Watchlist PEP DOB (1961-04-03), indicating a demographic mismatch. Secondary profile check yielded no corroboration.\",\n    \"status\": \"insufficient\",\n    \"supporting_sources\": [\n      \"KYC-ACC-IND-4412\",\n      \"WL-PEP-NGA-041\"\n    ]\n  }\n]\n\nProvide a rigorous CritiqueDecision.",
+      "schema": "CritiqueDecision",
+      "system": "You are RegGuard AI's anti-hallucination verification engine.\nYour single most critical mandate: DOES THE EVIDENCE IN THE LEDGER STRICTLY SUPPORT THE HYPOTHESES?\nIf not, you MUST mark evidence as insufficient, ambiguous, or contradicted \u2014 DO NOT GUESS.\n\nApply three non-negotiable compliance verification checks:\n1. TEMPORAL CONSISTENCY:\n   Verify that transaction timestamp is on or after the effective date of any cited regulation clause.\n   If a 2021 transaction cites a 2022 regulation, this is a FATAL TEMPORAL CONTRADICTION. Mark assessment=\"CONTRADICTED\", sufficient=false.\n2. ENTITY & DEMOGRAPHIC INTEGRITY:\n   If a watchlist match is found with high name similarity, verify secondary attributes (DOB, nationality).\n   If there is a significant DOB discrepancy (e.g. 1994 vs 1961), you CANNOT conclude innocence or guilt without secondary corroboration. Mark assessment=\"INSUFFICIENT\" or \"AMBIGUOUS\", sufficient=false.\n3. EVIDENTIARY COMPLETENESS:\n   Every statutory conclusion (e.g. structuring) must be mathematically substantiated by concrete transaction rows and active regulation clauses.\n\nIf any check fails or is incomplete, set sufficient=false and specify the exact missing evidence in 'missing'."
+    },
+    "key": "b389c1e1c5594a61a19c57caaa2f18912ba1364bde4593fd1ac1813f59d88baf",
+    "metadata": {},
+    "node_name": "critique",
+    "output_payload": {
+      "assessment": "AMBIGUOUS",
+      "detected_contradictions": [],
+      "missing": [
+        "historical transaction pattern"
+      ],
+      "reason": "watchlist ambiguity not resolved; transaction intent not established",
+      "sufficient": false,
+      "suggested_queries": []
+    },
+    "recorded_at": "2026-11-01T20:15:19.425734+00:00",
+    "schema_name": "CritiqueDecision"
+  },
+  "cd7a1820b2b014b4962109babda0e6a07ffd564d9f6177665a105e0a5b929cbd": {
+    "input_payload": {
+      "prompt": "Investigate the following flagged transaction:\nJurisdiction: NGA_CBN\nTransaction Metadata:\n- Transaction ID: TX-NGA-2023-0202\n- Account ID: ACC-IND-4412\n- Customer Name: Musa Ibrahim\n- DOB (KYC): 1994-08-12\n- Amount: 8,200,000.00 NGN\n- Timestamp: 2023-02-15T09:40:00Z\n- Flag Reason: PEP_NAME_MATCH\n\nGenerate a comprehensive InvestigationPlan.",
+      "schema": "InvestigationPlan",
+      "system": "You are RegGuard AI, an expert compliance investigator operating under Nigeria's Central Bank of Nigeria (CBN) AML/CFT Regulations 2022.\n\nYour duty:\n1. Decompose flagged transactions into rigorous, non-speculative investigation hypotheses.\n2. Formulate factual questions covering statutory reporting thresholds (N5M individual / N10M corporate), PEP exposure, and transaction structuring (smurfing within 48-72h).\n3. Schedule initial tool calls:\n   - 'regulation_search': to retrieve relevant CBN regulatory clauses from Qdrant.\n   - 'query_transactions': to execute read-only SQL queries over transaction history.\n   - 'watchlist_lookup': to check PEP/sanctions records with DOB and alias checks.\n   - 'threshold_calc': to evaluate mathematical turnover against limits.\n\nNever guess or assume customer innocence or guilt. Focus entirely on verifiable evidence."
+    },
+    "key": "cd7a1820b2b014b4962109babda0e6a07ffd564d9f6177665a105e0a5b929cbd",
+    "metadata": {},
+    "node_name": "plan",
+    "output_payload": {
+      "hypotheses": [
+        "Hypothesis 1: Customer Musa Ibrahim has active PEP exposure violating CBN AML/CFT EDD rules.",
+        "Hypothesis 2: Inward transfer of N8,200,000 exceeds threshold and requires source-of-funds verification.",
+        "Hypothesis 3: Name match on watchlist may represent a false positive due to demographic mismatch."
+      ],
+      "initial_questions": [
+        "Verify customer name against PEP/Sanctions watchlist.",
+        "Verify secondary KYC identifiers (DOB, BVN, Nationality).",
+        "Evaluate statutory reporting threshold under CBN AML Regulations."
+      ],
+      "planned_tool_calls": [
+        {
+          "parameters": {
+            "dob": "1994-08-12",
+            "name": "Musa Ibrahim"
+          },
+          "tool_name": "watchlist_lookup"
+        },
+        {
+          "parameters": {
+            "query": "Politically Exposed Persons Enhanced Due Diligence requirements"
+          },
+          "tool_name": "regulation_search"
+        }
+      ]
+    },
+    "recorded_at": "2026-11-02T04:05:10.001595+00:00",
+    "schema_name": "InvestigationPlan"
+  }
+}
