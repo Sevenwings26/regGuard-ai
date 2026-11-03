@@ -58,5 +58,41 @@
     "jurisdiction": "NGA",
     "listing_date": "2020-08-20",
     "risk_level": "CRITICAL"
+  },
+  {
+    "watchlist_id": "WL-PEP-NGA-142",
+    "name": "Dr. Raymond Tariemi",
+    "aliases": ["Raymond Tariemi", "Dr. R. Tariemi", "Chief Tariemi"],
+    "dob": "1966-07-19",
+    "nationality": "NGA",
+    "category": "PEP",
+    "role_description": "Former Managing Director, Niger Delta Development Commission (NDDC) (2018-2022)",
+    "jurisdiction": "NGA",
+    "listing_date": "2022-09-01",
+    "risk_level": "HIGH"
+  },
+  {
+    "watchlist_id": "WL-SANC-NGA-033",
+    "name": "Bashir Al-Hassan",
+    "aliases": ["Bashir Hassan", "Al-Hassan Bashir", "Commander Bashir"],
+    "dob": "1984-12-05",
+    "nationality": "NGA",
+    "category": "SANCTIONED",
+    "role_description": "NFIU Designated Terrorism Financing & Arms Procurement Conduit - Sahel Corridor",
+    "jurisdiction": "NGA",
+    "listing_date": "2023-01-18",
+    "risk_level": "CRITICAL"
+  },
+  {
+    "watchlist_id": "WL-PEP-NGA-201",
+    "name": "Senator Zainab Dahiru",
+    "aliases": ["Hajiya Zainab Dahiru", "Zainab B. Dahiru", "Hon. Zainab Dahiru"],
+    "dob": "1972-03-25",
+    "nationality": "NGA",
+    "category": "PEP",
+    "role_description": "Current Member of National Assembly, Senate Committee on Banking, Insurance & Financial Institutions",
+    "jurisdiction": "NGA",
+    "listing_date": "2023-06-15",
+    "risk_level": "HIGH"
   }
 ]

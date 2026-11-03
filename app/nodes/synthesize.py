@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 from app.state import InvestigationState, Claim
 from app.events import EventType, create_event
+from core.llm_adapter import get_llm_provider
 
 FIXTURES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "fixtures"))
 
@@ -14,8 +15,11 @@ def load_case_fixture(case_id: str) -> Dict[str, Any]:
         filename = "mock_case_a.json"
     elif "case-c" in cid or "case_c" in cid or "temporal" in cid:
         filename = "mock_case_c.json"
-    else:
+    elif "case-b" in cid or "case_b" in cid or "pep" in cid:
         filename = "mock_case_b.json"
+    else:
+        # Custom cases should not inherit predefined mock fixtures
+        return {}
 
     filepath = os.path.join(FIXTURES_DIR, filename)
     if os.path.exists(filepath):
@@ -51,8 +55,42 @@ def synthesize_node(state: InvestigationState) -> Dict[str, Any]:
     fixture_data = load_case_fixture(case_id)
     synth_fixture = fixture_data.get("mock_responses", {}).get("synthesis", {})
 
+    # Resolve active LLM provider identity for official regulatory provenance
+    llm = get_llm_provider(mode=state.get("mode"))
+    model_name = getattr(llm, "provider_name", "Autonomous Compliance Engine")
+
     now = datetime.now(timezone.utc).isoformat()
     events = []
+
+    is_custom = not synth_fixture or not any(k in case_id.lower() for k in ["case-a", "case-b", "case-c"])
+
+    # Citation Coverage Invariant:
+    # Under CBN AML/CFT compliance rules, no case can conclude autonomously (DRAFT_STR or CLEAR_NO_SUSPICION)
+    # without verified, non-empty supporting citations and at least one statutory regulation clause in the ledger.
+    if evidence_sufficient:
+        has_claims = len(claims) > 0
+        all_sourced = has_claims and all(
+            (len(c.supporting_sources) > 0 and any(s.strip() for s in c.supporting_sources))
+            for c in claims
+        )
+        has_regulatory_clause = any(
+            any("CBN-AML" in s or "SECTION" in s.upper() or "ACT" in s.upper() for s in c.supporting_sources) or
+            ("CBN-AML" in c.text or "Section" in c.text or "Regulations" in c.text)
+            for c in claims
+        )
+
+        if not (has_claims and all_sourced and has_regulatory_clause):
+            evidence_sufficient = False
+            missing_citation_reasons = []
+            if not has_claims:
+                missing_citation_reasons.append("Citation coverage enforcement: Evidence ledger is empty; no verifiable facts established.")
+            if not all_sourced:
+                missing_citation_reasons.append("Citation coverage enforcement: One or more claims lack verified source citations.")
+            if not has_regulatory_clause:
+                missing_citation_reasons.append("Citation coverage enforcement: No active statutory CBN regulatory clause cited in evidence chain.")
+
+            existing_missing = critique_decision.get("missing", [])
+            critique_decision["missing"] = missing_citation_reasons + (existing_missing or [])
 
     if not evidence_sufficient:
         # Branch 1: final_status == escalated
@@ -61,15 +99,35 @@ def synthesize_node(state: InvestigationState) -> Dict[str, Any]:
         if not verbatim_missing:
             verbatim_missing = ["Unresolved risk factors and uncorroborated customer profile."]
 
-        summary = synth_fixture.get(
-            "summary",
-            f"Investigation into customer {customer_name} ({account_id}) resulted in unresolved compliance "
-            f"ambiguity. Watchlist and transaction evidence could not definitively substantiate or dismiss risk."
-        )
+        if is_custom:
+            if verbatim_missing and len(verbatim_missing) > 1:
+                bullets = "\n".join(f"- {m.strip()}" for m in verbatim_missing)
+                summary = (
+                    f"Investigation into customer {customer_name} ({account_id}) resulted in unresolved compliance "
+                    f"ambiguity. Watchlist and transaction evidence could not definitively substantiate or dismiss risk:\n"
+                    f"{bullets}"
+                )
+            elif verbatim_missing:
+                summary = (
+                    f"Investigation into customer {customer_name} ({account_id}) resulted in unresolved compliance "
+                    f"ambiguity: {verbatim_missing[0]}."
+                )
+            else:
+                summary = (
+                    f"Investigation into customer {customer_name} ({account_id}) resulted in unresolved compliance "
+                    f"ambiguity requiring compliance officer review."
+                )
+        else:
+            summary = synth_fixture.get(
+                "summary",
+                f"Investigation into customer {customer_name} ({account_id}) resulted in unresolved compliance "
+                f"ambiguity. Watchlist and transaction evidence could not definitively substantiate or dismiss risk."
+            )
 
         memo = {
             "disposition": "ESCALATE_TO_OFFICER",
             "case_id": case_id,
+            "model_name": model_name,
             "subject_name": customer_name,
             "account_id": account_id,
             "summary": summary,
@@ -108,29 +166,43 @@ def synthesize_node(state: InvestigationState) -> Dict[str, Any]:
     else:
         # Branch 2: final_status == concluded
         final_status = "concluded"
-        critique_reason = str(critique_decision.get("reason", "")).lower()
-        is_cleared = (
-            "does not breach" in critique_reason or
-            "complied" in critique_reason or
-            "no suspicion" in critique_reason or
-            "clear" in critique_reason
-        )
+        # Structured disposition only: consume critique's recommended_disposition.
+        # Deterministic fallback derives from tool evidence, never free-text reason matching.
+        rec = str(critique_decision.get("recommended_disposition", "")).upper()
+        if rec in ("DRAFT_STR", "CLEAR_NO_SUSPICION"):
+            is_cleared = rec == "CLEAR_NO_SUSPICION"
+        else:
+            claim_texts = " ".join(c.text for c in claims)
+            breach_evidence = (
+                "breached: true" in claim_texts.lower()
+                or "structuring: true" in claim_texts.lower()
+                or any(c.status == "supported" and ("watchlist" in c.text.lower() and "similarity match" in c.text.lower()) for c in claims)
+            )
+            is_cleared = not breach_evidence
 
         if is_cleared:
             disposition = "CLEAR_NO_SUSPICION"
             status_desc = "clearing_flag"
             msg = "Evidence sufficient. Transaction compliant with applicable regulatory limit. Recommending clear flag."
-            summary = synth_fixture.get(
-                "summary",
-                f"Investigation into transaction {tx.get('transaction_id')} concluded with no suspicion. "
-                f"Initial flag resolved: governing regulation in force at transaction timestamp ({tx.get('timestamp')}) "
-                f"was verified and transaction is fully compliant."
-            )
-            governing_limit = 10000000.0 if ("corp" in str(account_id).lower() or tx.get("dob") is None) else 5000000.0
+            if is_custom:
+                summary = (
+                    f"Investigation into transaction {tx.get('transaction_id')} for {customer_name} concluded with no suspicion. "
+                    f"Factual compliance review verified that transaction complies with applicable regulatory limits."
+                )
+            else:
+                summary = synth_fixture.get(
+                    "summary",
+                    f"Investigation into transaction {tx.get('transaction_id')} concluded with no suspicion. "
+                    f"Initial flag resolved: governing regulation in force at transaction timestamp ({tx.get('timestamp')}) "
+                    f"was verified and transaction is fully compliant."
+                )
+            entity = (tx.get("entity_type") or ("CORPORATE" if "corp" in str(account_id).lower() else "INDIVIDUAL")).upper()
+            governing_limit = 10000000.0 if entity == "CORPORATE" else 5000000.0
 
             memo = {
                 "disposition": disposition,
                 "case_id": case_id,
+                "model_name": model_name,
                 "subject_name": customer_name,
                 "account_id": account_id,
                 "summary": summary,
@@ -149,30 +221,48 @@ def synthesize_node(state: InvestigationState) -> Dict[str, Any]:
             disposition = "DRAFT_STR"
             status_desc = "preparing_str"
             msg = "Evidence sufficient. Structuring/AML breach substantiated. Drafting Suspicious Transaction Report."
-            summary = synth_fixture.get(
-                "summary",
-                f"Investigation into customer {customer_name} ({account_id}) verified intentional "
-                f"transaction structuring to evade statutory individual cash limits under CBN AML/CFT Regulations 2022."
-            )
+            ent_type = tx.get("entity_type", "CORPORATE").upper()
+            stat_limit_str = "N10,000,000.00" if ent_type == "CORPORATE" else "N5,000,000.00"
+            tx_amt = tx.get("amount", 0.0)
+
+            if is_custom:
+                summary = (
+                    f"Investigation into customer {customer_name} ({account_id}) established a cash transaction of "
+                    f"NGN {tx_amt:,.2f}, breaching the statutory {ent_type.lower()} limit of {stat_limit_str} "
+                    f"under CBN AML/CFT Regulations 2022 Section 10."
+                )
+                narrative = (
+                    f"Customer {customer_name} conducted a cash deposit of NGN {tx_amt:,.2f}, breaching the statutory "
+                    f"{ent_type.lower()} cash reporting threshold of {stat_limit_str} under CBN AML/CFT Regulations 2022 Section 10."
+                )
+            else:
+                summary = synth_fixture.get(
+                    "summary",
+                    f"Investigation into customer {customer_name} ({account_id}) verified intentional "
+                    f"transaction structuring to evade statutory individual cash limits under CBN AML/CFT Regulations 2022."
+                )
+                narrative = (
+                    f"Customer {customer_name} conducted multiple structured cash deposits aggregating "
+                    f"in excess of the statutory individual threshold of N5,000,000 within a rolling 48-hour window. "
+                    f"The transactions exhibit clear structuring/smurfing characteristics in violation of CBN AML/CFT 2022 Section 10(3)."
+                )
+
             violations = synth_fixture.get("violations_found") or [
                 s for c in claims for s in c.supporting_sources if "CBN-AML-2022" in s
-            ] or ["CBN-AML-2022-SEC-10-3"]
+            ] or ["CBN-AML-2022-SEC-10-1"]
             violations = list(dict.fromkeys(violations))
 
             draft_str = {
                 "reporting_entity": "RegGuard Demo Bank Nigeria",
                 "investigation_id": case_id,
+                "model_name": model_name,
                 "subject_name": customer_name,
                 "account_id": account_id,
                 "bvn": tx.get("bvn", "N/A"),
                 "flag_reason": tx.get("flag_reason"),
-                "narrative": (
-                    f"Customer {customer_name} conducted multiple structured cash deposits aggregating "
-                    f"in excess of the statutory individual threshold of N5,000,000 within a rolling 48-hour window. "
-                    f"The transactions exhibit clear structuring/smurfing characteristics in violation of CBN AML/CFT 2022 Section 10(3)."
-                ),
+                "narrative": narrative,
                 "violations_found": violations,
-                "statutory_violation": "CBN AML/CFT Regulations 2022 Section 10(3) (Prohibition of Structuring and Smurfing)",
+                "statutory_violation": f"CBN AML/CFT Regulations 2022 Section 10 (Cash Transaction Threshold - {ent_type})",
                 "filing_deadline": "Within 24 hours pursuant to CBN AML/CFT Regulations 2022",
                 "merkle_root": tip_hash,
                 "ledger_tip_hash": tip_hash
@@ -181,6 +271,7 @@ def synthesize_node(state: InvestigationState) -> Dict[str, Any]:
             memo = {
                 "disposition": disposition,
                 "case_id": case_id,
+                "model_name": model_name,
                 "subject_name": customer_name,
                 "account_id": account_id,
                 "summary": summary,

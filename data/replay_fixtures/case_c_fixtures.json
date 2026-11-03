@@ -33,7 +33,7 @@
         }
       ]
     },
-    "recorded_at": "2026-11-02T04:05:10.014857+00:00",
+    "recorded_at": "2026-11-03T04:52:59.992044+00:00",
     "schema_name": "InvestigationPlan"
   },
   "444adf368f11a3cabd1f37c77d1bc5a0270a544609bf73410e5e4f715e0206d1": {
@@ -82,10 +82,11 @@
       "detected_contradictions": [],
       "missing": [],
       "reason": "Temporal alignment verified. Applicable governing law at transaction time was CBN AML/CFT Regulations 2013 Section 2(1). Corporate cash deposit of N7,500,000 does not breach N10,000,000 statutory limit.",
+      "recommended_disposition": "CLEAR_NO_SUSPICION",
       "sufficient": true,
       "suggested_queries": []
     },
-    "recorded_at": "2026-11-01T20:15:19.458591+00:00",
+    "recorded_at": "2026-11-03T04:53:00.053000+00:00",
     "schema_name": "CritiqueDecision"
   },
   "8c62cfa34f8b0119e86d0d972657bdf830119f6410dc427ec7b569abc4dee54f": {
@@ -106,6 +107,7 @@
         "applicable corporate cash threshold regulation in force prior to 2021-08-14"
       ],
       "reason": "Temporal contradiction detected: Transaction timestamp (2021-08-14) predates effective date (2022-11-01) of cited CBN AML/CFT Regulations 2022 Section 10(1).",
+      "recommended_disposition": "CLEAR_NO_SUSPICION",
       "sufficient": false,
       "suggested_queries": [
         {
@@ -117,7 +119,7 @@
         }
       ]
     },
-    "recorded_at": "2026-11-01T20:15:19.446255+00:00",
+    "recorded_at": "2026-11-03T04:53:00.012472+00:00",
     "schema_name": "CritiqueDecision"
   },
   "a1a7d3f48a2f9c53b43ff5cdf61aac1068e0ffe178798edc85b78ca46a9c63a6": {

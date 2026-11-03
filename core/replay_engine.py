@@ -157,6 +157,11 @@ class CachedLLMProvider(LLMProvider):
         output_dict = entry["output_payload"]
         validated = schema.model_validate(output_dict)
         latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
+        try:
+            from core.llm_adapter import set_last_llm_latency
+            set_last_llm_latency(latency_ms)
+        except Exception:
+            pass
         logger.info(f"Replay HIT [{self.provider_name}] Key: {key[:12]}... Schema: {schema_name} ({latency_ms}ms)")
         return validated
 

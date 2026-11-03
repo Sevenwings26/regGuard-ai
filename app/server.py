@@ -5,10 +5,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse, Response, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+from dotenv import load_dotenv
+
+# Load .env
+_dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
+if os.path.exists(_dotenv_path):
+    load_dotenv(_dotenv_path, override=True)
+else:
+    load_dotenv(override=True)
 
 from app.manager import manager
 from app.audit_memo import generate_audit_memo_markdown, generate_audit_memo_html, get_canonical_json_for_claim
 from app.state import compute_claim_hash
+from core.llm_adapter import get_llm_provider, get_last_llm_latency
 
 app = FastAPI(
     title="RegGuard AI Compliance Investigator",
@@ -28,9 +37,25 @@ app.add_middleware(
 STATIC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "static"))
 
 # Request schemas
+class CustomTransactionInput(BaseModel):
+    transaction_id: Optional[str] = Field(default=None, description="Custom transaction ID")
+    customer_name: str = Field(..., description="Customer full name")
+    account_id: str = Field(default="ACC-CUSTOM-01", description="Account identifier")
+    account_number: Optional[str] = Field(default="0998877665", description="NUBAN 10-digit account number")
+    amount: float = Field(..., description="Transaction amount in NGN")
+    currency: Optional[str] = Field(default="NGN", description="Currency ISO code")
+    timestamp: Optional[str] = Field(default=None, description="Timestamp of transaction")
+    transaction_type: str = Field(default="CASH_DEPOSIT", description="CASH_DEPOSIT | INWARD_TRANSFER | WIRE_TRANSFER | CASH_WITHDRAWAL")
+    flag_reason: str = Field(default="STATUTORY_THRESHOLD_BREACH", description="Trigger compliance flag reason")
+    dob: Optional[str] = Field(default=None, description="Customer KYC Date of Birth (YYYY-MM-DD)")
+    bvn: Optional[str] = Field(default="22200011122", description="Bank Verification Number")
+    entity_type: str = Field(default="INDIVIDUAL", description="INDIVIDUAL | CORPORATE")
+    narration: Optional[str] = Field(default="", description="Transaction narration/memo")
+
 class StartInvestigationRequest(BaseModel):
     case_id: str = Field(default="CASE-B-PEP-002", description="Identifier of the compliance case")
     mode: str = Field(default="CACHED", description="Execution mode: LIVE or CACHED")
+    custom_transaction: Optional[CustomTransactionInput] = Field(default=None, description="Optional custom transaction payload")
 
 class HumanDecisionRequest(BaseModel):
     decision: str = Field(..., description="Decision action: APPROVE_STR | REQUEST_MORE_INFO | ESCALATE_TO_SENIOR")
@@ -39,10 +64,23 @@ class HumanDecisionRequest(BaseModel):
 
 @app.get("/health")
 async def health_check():
-    provider = os.getenv("LLM_PROVIDER", "mock/llama-3.3-70b")
+    try:
+        active_provider = get_llm_provider()
+        provider_name = active_provider.provider_name
+    except Exception:
+        provider_name = os.getenv("LLM_PROVIDER", "mock/llama-3.3-70b-instruct")
+
+    dense_model = os.getenv("EMBEDDING_DENSE_MODEL", "BAAI/bge-small-en-v1.5")
+    sparse_model = os.getenv("EMBEDDING_SPARSE_MODEL", "Qdrant/bm25")
+    regguard_mode = os.getenv("REGGUARD_MODE", "LIVE")
+
     return {
         "status": "healthy",
-        "provider": provider,
+        "provider": provider_name,
+        "mode": regguard_mode,
+        "latency_ms": get_last_llm_latency(),
+        "embedding_dense": dense_model,
+        "embedding_sparse": sparse_model,
         "active_sessions": len(manager.sessions)
     }
 
@@ -74,7 +112,12 @@ async def list_demo_cases():
 
 @app.post("/investigations")
 async def start_investigation(req: StartInvestigationRequest):
-    session = manager.create_investigation(case_id=req.case_id, mode=req.mode.upper())
+    custom_tx_dict = req.custom_transaction.model_dump() if req.custom_transaction else None
+    session = manager.create_investigation(
+        case_id=req.case_id,
+        mode=req.mode.upper(),
+        custom_transaction=custom_tx_dict
+    )
     return {
         "investigation_id": session.investigation_id,
         "case_id": session.case_id,

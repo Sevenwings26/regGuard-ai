@@ -50,7 +50,7 @@
         }
       ]
     },
-    "recorded_at": "2026-11-02T04:05:09.984740+00:00",
+    "recorded_at": "2026-11-03T04:52:59.356289+00:00",
     "schema_name": "InvestigationPlan"
   },
   "8666261198e6f2e2920e989c0e06e51d4183a80a1a4afee9bbdbdb6af837e00f": {
@@ -67,10 +67,11 @@
       "detected_contradictions": [],
       "missing": [],
       "reason": "Customer Emeka Okafor conducted 3 cash deposits totaling N5,500,000.00 within 25.5 hours, structuring to evade statutory individual limit of N5,000,000 under CBN AML/CFT 2022 Section 10(3).",
+      "recommended_disposition": "DRAFT_STR",
       "sufficient": true,
       "suggested_queries": []
     },
-    "recorded_at": "2026-11-01T20:15:19.401168+00:00",
+    "recorded_at": "2026-11-03T04:52:59.952405+00:00",
     "schema_name": "CritiqueDecision"
   },
   "97b21f8f52a9ea42a049f8b54f11a7b72db961200679aa2c2ffd29d04f1919c7": {

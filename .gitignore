@@ -24,3 +24,7 @@ data/qdrant_storage/
 *.pytest_cache/
 
 
+.env
+data/eval_regguard.db
+data/eval_results_*.json
+

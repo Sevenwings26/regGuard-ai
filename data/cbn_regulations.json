@@ -142,5 +142,21 @@
     "effective_date": "2013-01-15",
     "text": "Financial institutions must verify PEP status and obtain executive management consent prior to account opening under the 2013 regulatory framework.",
     "tags": ["pep", "historic", "due_diligence"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-10-5",
+    "section_title": "Statutory Exemption for Documented Agricultural and Commodity Aggregation",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "Legitimate agricultural buying agents and commodities aggregators conducting multi-branch cash deposits are exempt from illicit structuring penalties under Section 10(3) where transactions are accompanied by verified farmers' cooperative purchase schedules, state commodity vouchers, and registered corporate identity. Such transactions require Statutory Clearance rather than an STR.",
+    "tags": ["exemption", "agriculture", "commodity", "structuring", "clearance"]
+  },
+  {
+    "clause_id": "CBN-AML-2022-SEC-22-3",
+    "section_title": "Dormant and Inactive Account Velocity Spike Monitoring",
+    "regulation": "CBN AML/CFT Regulations 2022",
+    "effective_date": "2022-11-01",
+    "text": "Where an account having zero turnover for greater than 180 days suddenly receives aggregate inflows exceeding N5,000,000 within a 48-hour window followed by rapid withdrawal attempts, institutions shall halt outward transfers, flag the activity as money mule behavior, mandate Tier-3 biometric re-verification, and file a Suspicious Transaction Report within 24 hours.",
+    "tags": ["dormant", "velocity", "mule", "edd", "inflow", "str"]
   }
 ]

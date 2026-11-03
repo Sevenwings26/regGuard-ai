@@ -7,8 +7,7 @@ from core.llm_adapter import get_llm_provider
 
 def plan_node(state: InvestigationState) -> Dict[str, Any]:
     """
-    Decomposes the flagged transaction into investigative hypotheses and schedules
-    initial tool calls using LLM reasoning.
+    Decomposes the flagged transaction into investigative hypotheses and schedules initial tool calls using LLM reasoning.
     """
     case_id = state["case_id"]
     seq = state.get("last_event_sequence", 0)
@@ -51,7 +50,12 @@ def plan_node(state: InvestigationState) -> Dict[str, Any]:
     return {
         "current_node": "plan",
         "unresolved_questions": plan.initial_questions,
-        "planned_queries": [call.model_dump() for call in plan.planned_tool_calls],
+        "planned_queries": [
+            call.model_dump() if hasattr(call, "model_dump") else (
+                call if isinstance(call, dict) else {"tool_name": "query_transactions", "parameters": {"description": str(call)}}
+            )
+            for call in plan.planned_tool_calls
+        ],
         "last_event_sequence": seq + len(events),
         "event_log": events,
     }

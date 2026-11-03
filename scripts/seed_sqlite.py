@@ -66,7 +66,11 @@ def seed_data(cursor):
         ("CUST-CORP-1011", "Kudirat Logistics Ltd", "CORPORATE", None, None, None, "RC-892101", "NGA", "LOW", "VERIFIED", "2018-03-10T09:30:00Z"),
         # General background customers
         ("CUST-IND-1001", "Amina Abubakar", "INDIVIDUAL", "1990-11-04", "22233445566", "99001122334", None, "NGA", "LOW", "VERIFIED", "2019-01-15T10:00:00Z"),
-        ("CUST-CORP-2002", "Dangote Cement Retail Sub-Agent", "CORPORATE", None, None, None, "RC-112233", "NGA", "LOW", "VERIFIED", "2017-05-20T14:00:00Z")
+        ("CUST-CORP-2002", "Dangote Cement Retail Sub-Agent", "CORPORATE", None, None, None, "RC-112233", "NGA", "LOW", "VERIFIED", "2017-05-20T14:00:00Z"),
+        # Challenging Test Cases
+        ("CUST-IND-7701", "Alhaji Bashir Hassan", "INDIVIDUAL", "1984-12-05", "22334411223", "77889900112", None, "NGA", "HIGH", "VERIFIED", "2021-08-10T11:00:00Z"),
+        ("CUST-CORP-4004", "GreenHorizon Agri-Commodities Ltd", "CORPORATE", None, None, None, "RC-445566", "NGA", "LOW", "VERIFIED", "2020-02-14T09:00:00Z"),
+        ("CUST-IND-3305", "Ibrahim D. Suleiman", "INDIVIDUAL", "1998-02-14", "22001144556", "33445566778", None, "NGA", "MEDIUM", "TIER_1", "2021-03-20T14:30:00Z")
     ]
     cursor.executemany("INSERT INTO customers VALUES (?,?,?,?,?,?,?,?,?,?,?);", customers)
 
@@ -76,7 +80,10 @@ def seed_data(cursor):
         ("ACC-IND-4412", "CUST-IND-4412", "0234567890", "CURRENT", "NGN", 8450000.0, "ACTIVE", "2021-02-10"),
         ("ACC-CORP-1011", "CUST-CORP-1011", "0345678901", "CORPORATE", "NGN", 24000000.0, "ACTIVE", "2018-03-10"),
         ("ACC-IND-1001", "CUST-IND-1001", "0456789012", "SAVINGS", "NGN", 350000.0, "ACTIVE", "2019-01-15"),
-        ("ACC-CORP-2002", "CUST-CORP-2002", "0567890123", "CORPORATE", "NGN", 12000000.0, "ACTIVE", "2017-05-20")
+        ("ACC-CORP-2002", "CUST-CORP-2002", "0567890123", "CORPORATE", "NGN", 12000000.0, "ACTIVE", "2017-05-20"),
+        ("ACC-IND-7701", "CUST-IND-7701", "0678901234", "CURRENT", "NGN", 9400000.0, "ACTIVE", "2021-08-10"),
+        ("ACC-CORP-4004", "CUST-CORP-4004", "0789012345", "CORPORATE", "NGN", 45000000.0, "ACTIVE", "2020-02-14"),
+        ("ACC-IND-3305", "CUST-IND-3305", "0890123456", "SAVINGS", "NGN", 6820000.0, "ACTIVE", "2021-03-20")
     ]
     cursor.executemany("INSERT INTO accounts VALUES (?,?,?,?,?,?,?,?);", accounts)
 
@@ -95,7 +102,18 @@ def seed_data(cursor):
 
         # Background transactions
         ("TX-BG-001", "ACC-IND-1001", "ATM_WITHDRAWAL", 20000.0, "NGN", "ATM Cash Out Lekki", "ATM", None, None, None, "2023-01-10 14:10:00", None),
-        ("TX-BG-002", "ACC-CORP-2002", "INWARD_TRANSFER", 3500000.0, "NGN", "Distribution invoice settlement", "NIP_TRANSFER", "Lafarge Sub-Vendor", "1122334455", "Access Bank", "2023-01-12 16:00:00", None)
+        ("TX-BG-002", "ACC-CORP-2002", "INWARD_TRANSFER", 3500000.0, "NGN", "Distribution invoice settlement", "NIP_TRANSFER", "Lafarge Sub-Vendor", "1122334455", "Access Bank", "2023-01-12 16:00:00", None),
+
+        # Corporate Smurfing Triplet for GreenHorizon Agri-Commodities (Total: 11.5M in 25.75h > 10M Corporate limit)
+        ("TX-CORP-SMURF-01", "ACC-CORP-4004", "CASH_DEPOSIT", 3800000.0, "NGN", "Cash deposit at Kano Central Branch", "BRANCH_TELLER", None, None, None, "2023-04-10 09:30:00", None),
+        ("TX-CORP-SMURF-02", "ACC-CORP-4004", "CASH_DEPOSIT", 4100000.0, "NGN", "Cash deposit at Kaduna South Branch", "BRANCH_TELLER", None, None, None, "2023-04-10 15:45:00", None),
+        ("TX-CORP-SMURF-03", "ACC-CORP-4004", "CASH_DEPOSIT", 3600000.0, "NGN", "Cash deposit at Zaria Main Branch", "BRANCH_TELLER", None, None, None, "2023-04-11 11:15:00", "RAPID_AGGREGATION_STRUCTURING"),
+
+        # Critical Sanctions Alias Hit: Bashir Al-Hassan
+        ("TX-SANC-HIT-01", "ACC-IND-7701", "INWARD_TRANSFER", 9400000.0, "NGN", "Mining equipment clearing wire", "NIP_TRANSFER", "Sahel Mineral Trading FZE", "1100223344", "Jaiz Bank", "2023-05-18 10:20:00", "SANCTIONS_NAME_ALIAS_MATCH"),
+
+        # Dormant Account Money Mule Velocity Spike
+        ("TX-MULE-SPIKE-01", "ACC-IND-3305", "INWARD_TRANSFER", 6800000.0, "NGN", "Peer crowd remittance funds", "NIP_TRANSFER", "Unknown Remitter", "8899001122", "Kuda MFB", "2023-06-02 14:15:00", "DORMANT_ACCOUNT_VELOCITY_SPIKE")
     ]
     cursor.executemany("INSERT INTO transactions VALUES (?,?,?,?,?,?,?,?,?,?,?,?);", transactions)
 

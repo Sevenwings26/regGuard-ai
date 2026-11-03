@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import sqlite3
 import uuid
 from datetime import datetime, timezone
 from typing import Any, AsyncGenerator, Dict, List, Optional
@@ -53,13 +54,85 @@ class InvestigationManager:
         with open(filepath, "r", encoding="utf-8") as f:
             return json.load(f)
 
-    def create_investigation(self, case_id: str, mode: str = "LIVE") -> InvestigationSession:
+    def persist_custom_transaction_db(self, tx: Dict[str, Any]):
+        """Persists custom transaction, account, and customer into SQLite so tools find it."""
+        db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "regguard.db"))
+        if not os.path.exists(db_path):
+            return
+
+        account_id = tx.get("account_id") or "ACC-CUSTOM-01"
+        cust_id = f"CUST-{account_id[-4:]}"
+        cust_name = tx.get("customer_name", "Custom Customer")
+        entity_type = tx.get("entity_type", "INDIVIDUAL")
+        dob = tx.get("dob") or "1990-01-01"
+        bvn = tx.get("bvn") or "22200011122"
+        tx_id = tx.get("transaction_id") or f"TX-CUSTOM-{uuid.uuid4().hex[:6].upper()}"
+        amount = float(tx.get("amount", 0.0))
+        timestamp = tx.get("timestamp") or datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        flag_code = tx.get("flag_reason", "MANUAL_COMPLIANCE_FLAG")
+        narration = tx.get("narration", "Custom client transaction")
+
+        try:
+            conn = sqlite3.connect(db_path)
+            cur = conn.cursor()
+            # 1. Customer
+            cur.execute(
+                """
+                INSERT OR IGNORE INTO customers (customer_id, full_name, entity_type, dob, bvn, nationality, risk_rating, kyc_status, created_at)
+                VALUES (?, ?, ?, ?, ?, 'NGA', 'HIGH', 'VERIFIED', ?)
+                """,
+                (cust_id, cust_name, entity_type, dob, bvn, datetime.now(timezone.utc).isoformat())
+            )
+            # 2. Account
+            cur.execute(
+                """
+                INSERT OR IGNORE INTO accounts (account_id, customer_id, account_number, account_type, currency, balance, status, opened_date)
+                VALUES (?, ?, ?, ?, 'NGN', ?, 'ACTIVE', '2022-01-01')
+                """,
+                (account_id, cust_id, tx.get("account_number", "0998877665"), "SAVINGS" if entity_type == "INDIVIDUAL" else "CORPORATE", amount * 1.5)
+            )
+            # 3. Transaction
+            cur.execute(
+                """
+                INSERT OR REPLACE INTO transactions (transaction_id, account_id, transaction_type, amount, currency, narration, channel, timestamp, flag_code)
+                VALUES (?, ?, ?, ?, 'NGN', ?, 'BRANCH_TELLER', ?, ?)
+                """,
+                (tx_id, account_id, tx.get("transaction_type", "CASH_DEPOSIT"), amount, narration, timestamp, flag_code)
+            )
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+
+    def create_investigation(
+        self,
+        case_id: str,
+        mode: str = "LIVE",
+        custom_transaction: Optional[Dict[str, Any]] = None
+    ) -> InvestigationSession:
         """Initializes a new investigation session and starts background execution."""
         investigation_id = f"inv_{uuid.uuid4().hex[:8]}"
         session = InvestigationSession(investigation_id, case_id, mode)
         self.sessions[investigation_id] = session
 
-        case_data = self.get_case_fixtures(case_id)
+        if custom_transaction:
+            # Generate transaction_id and timestamp if needed
+            if not custom_transaction.get("transaction_id"):
+                custom_transaction["transaction_id"] = f"TX-CUSTOM-{uuid.uuid4().hex[:6].upper()}"
+            if not custom_transaction.get("timestamp"):
+                custom_transaction["timestamp"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+            # Persist to local database
+            self.persist_custom_transaction_db(custom_transaction)
+
+            case_data = {
+                "case_id": case_id if case_id != "CUSTOM" else custom_transaction["transaction_id"],
+                "jurisdiction": "NGA_CBN",
+                "flagged_transaction": custom_transaction
+            }
+        else:
+            case_data = self.get_case_fixtures(case_id)
+
         initial_state: InvestigationState = {
             "case_id": case_data.get("case_id", case_id),
             "jurisdiction": case_data.get("jurisdiction", "NGA_CBN"),

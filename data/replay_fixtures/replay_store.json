@@ -9,7 +9,7 @@
     "metadata": {},
     "node_name": "refine",
     "output_payload": {
-      "action": "Reformulate regulatory search with strict temporal filter: effective_before='2021-08-14' to retrieve the governing historical regulation in force in August 2021.",
+      "action": "Reformulate regulatory search with strict temporal filter: effective_before='2021-08-14' to retrieve the governing historical regulation in force in 2021-08.",
       "planned_tool_calls": [
         {
           "parameters": {
@@ -32,7 +32,7 @@
         }
       ]
     },
-    "recorded_at": "2026-11-02T04:05:10.021892+00:00",
+    "recorded_at": "2026-11-03T04:53:00.014783+00:00",
     "schema_name": "RefinePlan"
   },
   "1a751bfc9cf3dba13a9314a6c2c18c809a8a49a48a771da55035280b63079703": {
@@ -69,7 +69,7 @@
         }
       ]
     },
-    "recorded_at": "2026-11-02T04:05:10.014857+00:00",
+    "recorded_at": "2026-11-03T04:52:59.992044+00:00",
     "schema_name": "InvestigationPlan"
   },
   "2626a63364b04c613366cfed7f111ab40827627149080c85043e028cbc06ce75": {
@@ -85,7 +85,7 @@
       "action": "Target missing evidence gaps with refined tool queries.",
       "planned_tool_calls": []
     },
-    "recorded_at": "2026-11-02T04:05:10.008532+00:00",
+    "recorded_at": "2026-11-03T04:52:59.980960+00:00",
     "schema_name": "RefinePlan"
   },
   "35d54ecedb1926410586a61b86be6009bb53001d8e9a211c7a35d868feb72f54": {
@@ -139,7 +139,7 @@
         }
       ]
     },
-    "recorded_at": "2026-11-02T04:05:09.984740+00:00",
+    "recorded_at": "2026-11-03T04:52:59.356289+00:00",
     "schema_name": "InvestigationPlan"
   },
   "444adf368f11a3cabd1f37c77d1bc5a0270a544609bf73410e5e4f715e0206d1": {
@@ -210,10 +210,11 @@
       "detected_contradictions": [],
       "missing": [],
       "reason": "Temporal alignment verified. Applicable governing law at transaction time was CBN AML/CFT Regulations 2013 Section 2(1). Corporate cash deposit of N7,500,000 does not breach N10,000,000 statutory limit.",
+      "recommended_disposition": "CLEAR_NO_SUSPICION",
       "sufficient": true,
       "suggested_queries": []
     },
-    "recorded_at": "2026-11-01T20:15:19.458591+00:00",
+    "recorded_at": "2026-11-03T04:53:00.053000+00:00",
     "schema_name": "CritiqueDecision"
   },
   "4ba97ec46d7d0934e1c9e9fe9f1986b744d7cfc2b672a0d3d4d358367a2ce178": {
@@ -232,10 +233,11 @@
         "historical transaction pattern"
       ],
       "reason": "watchlist ambiguity not resolved; transaction intent not established",
+      "recommended_disposition": "CLEAR_NO_SUSPICION",
       "sufficient": false,
       "suggested_queries": []
     },
-    "recorded_at": "2026-11-01T20:15:19.422340+00:00",
+    "recorded_at": "2026-11-03T04:52:59.979956+00:00",
     "schema_name": "CritiqueDecision"
   },
   "847ae909de4be75bcc4af7877baf16fd00ed13390379b5ecda2558b99c835f6c": {
@@ -274,10 +276,11 @@
       "detected_contradictions": [],
       "missing": [],
       "reason": "Customer Emeka Okafor conducted 3 cash deposits totaling N5,500,000.00 within 25.5 hours, structuring to evade statutory individual limit of N5,000,000 under CBN AML/CFT 2022 Section 10(3).",
+      "recommended_disposition": "DRAFT_STR",
       "sufficient": true,
       "suggested_queries": []
     },
-    "recorded_at": "2026-11-01T20:15:19.401168+00:00",
+    "recorded_at": "2026-11-03T04:52:59.952405+00:00",
     "schema_name": "CritiqueDecision"
   },
   "8c62cfa34f8b0119e86d0d972657bdf830119f6410dc427ec7b569abc4dee54f": {
@@ -298,6 +301,7 @@
         "applicable corporate cash threshold regulation in force prior to 2021-08-14"
       ],
       "reason": "Temporal contradiction detected: Transaction timestamp (2021-08-14) predates effective date (2022-11-01) of cited CBN AML/CFT Regulations 2022 Section 10(1).",
+      "recommended_disposition": "CLEAR_NO_SUSPICION",
       "sufficient": false,
       "suggested_queries": [
         {
@@ -309,7 +313,7 @@
         }
       ]
     },
-    "recorded_at": "2026-11-01T20:15:19.446255+00:00",
+    "recorded_at": "2026-11-03T04:53:00.012472+00:00",
     "schema_name": "CritiqueDecision"
   },
   "97b21f8f52a9ea42a049f8b54f11a7b72db961200679aa2c2ffd29d04f1919c7": {
@@ -368,10 +372,11 @@
         "historical transaction pattern"
       ],
       "reason": "watchlist ambiguity not resolved; transaction intent not established",
+      "recommended_disposition": "CLEAR_NO_SUSPICION",
       "sufficient": false,
       "suggested_queries": []
     },
-    "recorded_at": "2026-11-01T20:15:19.425734+00:00",
+    "recorded_at": "2026-11-03T04:52:59.984499+00:00",
     "schema_name": "CritiqueDecision"
   },
   "cd7a1820b2b014b4962109babda0e6a07ffd564d9f6177665a105e0a5b929cbd": {
@@ -410,7 +415,7 @@
         }
       ]
     },
-    "recorded_at": "2026-11-02T04:05:10.001595+00:00",
+    "recorded_at": "2026-11-03T04:52:59.958646+00:00",
     "schema_name": "InvestigationPlan"
   }
 }

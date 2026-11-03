@@ -39,7 +39,12 @@ def refine_node(state: InvestigationState) -> Dict[str, Any]:
         system=REFINE_SYSTEM_PROMPT
     )
 
-    planned_tool_calls = [call.model_dump() for call in refine_plan.planned_tool_calls]
+    planned_tool_calls = [
+        call.model_dump() if hasattr(call, "model_dump") else (
+            call if isinstance(call, dict) else {"tool_name": "query_transactions", "parameters": {"description": str(call)}}
+        )
+        for call in refine_plan.planned_tool_calls
+    ]
 
     # Heuristic fallback if LLM returned empty tool calls but gaps exist
     if not planned_tool_calls:
@@ -75,6 +80,17 @@ def refine_node(state: InvestigationState) -> Dict[str, Any]:
                     }
                 }
             ]
+
+    # Ensure threshold_calc uses actual transaction amount and metadata if defaults were provided
+    for call in planned_tool_calls:
+        if call.get("tool_name") == "threshold_calc":
+            params = call.setdefault("parameters", {})
+            if not params.get("amounts") or params.get("amounts") == [7500000.0]:
+                params["amounts"] = [float(tx.get("amount", 0.0))]
+            if not params.get("timestamps") or params.get("timestamps") == ["2021-08-14 11:20:00"]:
+                params["timestamps"] = [tx.get("timestamp", "")]
+            if not params.get("entity_type"):
+                params["entity_type"] = tx.get("entity_type", "CORPORATE")
 
     # 2. Emit STATE_TRANSITION event for Refine
     seq += 1

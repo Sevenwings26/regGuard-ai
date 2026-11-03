@@ -117,13 +117,21 @@ def critique_node(state: InvestigationState) -> Dict[str, Any]:
         max_retries=max_retries
     )
 
-    critique_decision: CritiqueDecision = llm.complete_structured(
-        schema=CritiqueDecision,
-        prompt=prompt,
-        system=CRITIQUE_SYSTEM_PROMPT
-    )
+    try:
+        critique_decision: CritiqueDecision = llm.complete_structured(
+            schema=CritiqueDecision,
+            prompt=prompt,
+            system=CRITIQUE_SYSTEM_PROMPT
+        )
+    except Exception as llm_err:
+        critique_decision = CritiqueDecision(
+            sufficient=False,
+            assessment="INSUFFICIENT",
+            reason=f"Evidentiary reasoning could not be validated against compliance schema: {llm_err}",
+            missing=[f"Model reasoning failed schema validation: {llm_err}"]
+        )
 
-    # 4. Enforce Hard Anti-Hallucination Guardrails
+    # 4. Enforce Hard Evidentiary Compliance Guardrails
     # If temporal contradiction exists but LLM missed it, guardrail overrides
     if temporal_contradictions and critique_decision.sufficient:
         critique_decision.sufficient = False

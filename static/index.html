@@ -78,7 +78,13 @@
           <template x-for="c in cases" :key="c.id">
             <option :value="c.id" x-text="c.name"></option>
           </template>
+          <option value="CUSTOM">★ Custom Input Transaction...</option>
         </select>
+        <!-- Custom Case Trigger Button -->
+        <button @click="openCustomTxModal()" class="bg-gradient-to-r from-cyan-950 to-slate-850 hover:from-cyan-900 hover:to-slate-800 text-cyan-300 border border-cyan-800 hover:border-cyan-500/60 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-sm" title="Submit custom transaction for investigation">
+          <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          <span class="hidden sm:inline">Custom Input</span>
+        </button>
       </div>
 
       <!-- Execution Mode Toggle [ LIVE | CACHED ] -->
@@ -113,9 +119,10 @@
     <div class="flex items-center gap-2">
       <!-- Active Provider Badge -->
       <div class="px-2.5 py-1 rounded-lg bg-slate-800/90 border border-slate-700 text-slate-300 font-mono text-[11px] flex items-center gap-2 shadow-inner">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span class="text-slate-400 hidden md:inline">Provider:</span>
+        <span class="w-2 h-2 rounded-full" :class="executionMode === 'LIVE' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></span>
+        <span class="text-slate-400 hidden md:inline" x-text="executionMode === 'LIVE' ? 'Live Model:' : 'Source:'"></span>
         <span class="text-cyan-300 font-semibold" x-text="executionMode === 'CACHED' ? 'cached/replay-store' : activeProvider"></span>
+        <span x-show="executionMode === 'LIVE' && lastLatency" class="text-emerald-400 font-semibold text-[10px]" x-text="'• ' + lastLatency + 'ms'"></span>
       </div>
 
       <!-- Evidence Ledger Chain Badge -->
@@ -180,32 +187,81 @@
         </div>
       </div>
 
-      <!-- Real-Time Activity Event Log Stream -->
-      <div class="flex-1 flex flex-col min-h-[220px] lg:min-h-0 bg-slate-950/90 rounded-lg border border-slate-800 p-2.5 overflow-hidden shadow-inner">
-        <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2 flex justify-between items-center border-b border-slate-850 pb-1.5">
-          <span class="flex items-center gap-1.5">
-            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-            Sub-Step Activity Stream
-          </span>
-          <span class="font-mono text-cyan-400 text-[10px]" x-text="events.length + ' Events'"></span>
+      <!-- Sub-Step Activity Stream Spotlight & Telemetry -->
+      <div class="flex-1 flex flex-col min-h-[220px] lg:min-h-0 bg-slate-950/90 rounded-lg border border-slate-800 p-2.5 overflow-hidden shadow-inner justify-between">
+        <!-- Header -->
+        <div class="flex justify-between items-center border-b border-slate-850 pb-1.5 mb-2">
+          <div class="flex items-center gap-2">
+            <span class="relative flex h-2 w-2">
+              <span x-show="isRunning" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2" :class="isRunning ? 'bg-cyan-400' : (events.length > 0 ? 'bg-emerald-400' : 'bg-slate-600')"></span>
+            </span>
+            <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-300">
+              Sub-Step Activity Stream
+            </span>
+          </div>
+          <button @click="openActivityStreamModal()" class="text-[10px] bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 border border-cyan-800/80 px-2 py-0.5 rounded font-bold flex items-center gap-1 transition-all shadow-sm">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+            <span>Expand Stream</span>
+          </button>
         </div>
-        
-        <div class="flex-1 overflow-y-auto space-y-2 text-[11px] font-mono pr-1" id="eventLogsBox">
+
+        <!-- Standby vs Live Active Step Spotlight -->
+        <div class="flex-1 flex flex-col justify-center min-h-0">
           <template x-if="events.length === 0">
-            <div class="h-full flex items-center justify-center text-slate-600 text-xs italic">
-              Awaiting event stream...
+            <div class="flex-1 flex flex-col items-center justify-center p-3 text-center rounded-lg bg-slate-900/40 border border-dashed border-slate-800/80 my-1">
+              <div class="w-8 h-8 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-400 mb-1.5 shadow-inner">
+                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </div>
+              <p class="text-xs font-bold text-slate-300">SSE Telemetry Standby</p>
+              <p class="text-[10px] text-slate-500 mt-1 max-w-[190px]">Start an investigation to stream real-time LangGraph actions, tool calls, and verified claims.</p>
             </div>
           </template>
 
-          <template x-for="ev in events" :key="ev.sequence_number">
-            <div class="p-2 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition-colors leading-snug">
-              <div class="flex justify-between items-center text-[10px] mb-1">
-                <span class="px-1.5 py-0.2 rounded font-bold" :class="getEventBadgeClass(ev.event_type)" x-text="'#' + ev.sequence_number + ' ' + ev.event_type"></span>
-                <span class="text-slate-500" x-text="formatTime(ev.timestamp)"></span>
+          <template x-if="events.length > 0">
+            <div class="flex flex-col gap-2 my-auto">
+              <!-- Latest Active Event Card (Clickable to open modal) -->
+              <div @click="openActivityStreamModal()" class="cursor-pointer group p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-cyan-600/60 transition-all shadow-md relative overflow-hidden">
+                <div class="flex justify-between items-center text-[10px] mb-1.5">
+                  <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full" :class="isRunning ? 'bg-cyan-400 animate-pulse' : 'bg-emerald-400'"></span>
+                    <span class="px-1.5 py-0.2 rounded font-bold text-[9px]" :class="getEventBadgeClass(events[0].event_type)" x-text="'#' + events[0].sequence_number + ' ' + events[0].event_type"></span>
+                  </div>
+                  <span class="text-slate-400 font-mono text-[9px]" x-text="formatTime(events[0].timestamp)"></span>
+                </div>
+                <p class="text-slate-200 text-xs font-medium leading-snug line-clamp-2" x-text="formatEventPayload(events[0])"></p>
+                <div class="mt-2 pt-1.5 border-t border-slate-850 flex items-center justify-between text-[10px] text-slate-400">
+                  <span class="text-cyan-400 font-bold flex items-center gap-1 group-hover:underline text-[10px]">
+                    Inspect in stream modal
+                    <svg class="w-3 h-3 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                  </span>
+                  <span class="font-mono text-slate-500 text-[10px]" x-text="events.length + ' events total'"></span>
+                </div>
               </div>
-              <p class="text-slate-300 text-[11px] font-sans break-words" x-text="formatEventPayload(ev)"></p>
+
+              <!-- Mini-preview of prior events -->
+              <div class="space-y-1" id="eventLogsBox">
+                <template x-for="ev in events.slice(1, 3)" :key="ev.sequence_number">
+                  <div @click="openActivityStreamModal()" class="cursor-pointer p-1.5 rounded bg-slate-900/50 border border-slate-850 hover:border-slate-750 flex items-center justify-between text-[10px] transition-colors">
+                    <div class="flex items-center gap-1.5 truncate max-w-[200px]">
+                      <span class="font-mono font-bold text-slate-500" x-text="'#' + ev.sequence_number"></span>
+                      <span class="text-slate-300 truncate" x-text="formatEventPayload(ev)"></span>
+                    </div>
+                    <span class="text-slate-500 font-mono text-[9px] shrink-0" x-text="formatTime(ev.timestamp)"></span>
+                  </div>
+                </template>
+              </div>
             </div>
           </template>
+        </div>
+
+        <!-- Bottom Action Button -->
+        <div class="pt-2 border-t border-slate-850">
+          <button @click="openActivityStreamModal()" class="w-full py-1.5 px-3 rounded-lg bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-cyan-800 text-slate-300 hover:text-cyan-300 text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm">
+            <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+            <span>View Full Activity Stream</span>
+            <span class="bg-cyan-950 text-cyan-300 border border-cyan-800/80 text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold" x-text="events.length"></span>
+          </button>
         </div>
       </div>
     </section>
@@ -366,7 +422,12 @@
         <!-- Synthesized Package / Audit Memo Hero Card -->
         <div class="bg-slate-950/90 p-3.5 rounded-xl border border-slate-800 shadow-md">
           <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-extrabold text-cyan-400 uppercase tracking-wider">Case Disposition</span>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-extrabold text-cyan-400 uppercase tracking-wider">Case Disposition</span>
+              <span x-show="auditMemo?.model_name || activeProvider"
+                    class="text-[10px] font-mono bg-slate-900 border border-slate-750 px-2 py-0.5 rounded text-cyan-300"
+                    x-text="auditMemo?.model_name || activeProvider"></span>
+            </div>
             <span class="text-[10px] font-mono font-black px-2 py-0.5 rounded-md border uppercase tracking-wider"
                   :class="{
                     'bg-emerald-950/80 text-emerald-400 border-emerald-700': auditMemo?.disposition === 'DRAFT_STR' || auditMemo?.disposition === 'CLEAR_NO_SUSPICION',
@@ -377,7 +438,7 @@
           </div>
 
           <!-- Summary Text -->
-          <p class="text-xs text-slate-200 leading-relaxed mb-3 font-medium" x-text="auditMemo?.summary || 'Investigation running. Synthesis node will compile audit package upon critique validation.'"></p>
+          <p class="text-xs text-slate-200 leading-relaxed mb-3 font-medium whitespace-pre-line" x-text="auditMemo?.summary || 'Investigation running. Synthesis node will compile audit package upon critique validation.'"></p>
 
           <!-- Branch 1: DRAFT_STR Preview -->
           <template x-if="auditMemo?.disposition === 'DRAFT_STR'">
@@ -654,7 +715,10 @@
             STR
           </div>
           <div>
-            <h3 class="text-sm font-extrabold text-white">Central Bank of Nigeria (CBN) AML Compliance Report</h3>
+            <div class="flex items-center gap-2">
+              <h3 class="text-sm font-extrabold text-white">Central Bank of Nigeria (CBN) AML Compliance Report</h3>
+              <span class="text-[10px] font-mono bg-slate-950 border border-slate-750 px-2 py-0.5 rounded text-cyan-300" x-text="auditMemo?.model_name || activeProvider"></span>
+            </div>
             <p class="text-[11px] text-slate-400" x-text="'Case: ' + activeCaseMeta.name + ' • Ref: ' + currentInvestigationId"></p>
           </div>
         </div>
@@ -701,6 +765,260 @@
   </div>
 
   <!-- ========================================================================= -->
+  <!-- MODAL 3: SUBMIT CUSTOM TRANSACTION FOR INVESTIGATION                      -->
+  <!-- ========================================================================= -->
+  <div x-show="showCustomTxModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-sm" @keydown.escape.window="showCustomTxModal = false">
+    <div @click.away="showCustomTxModal = false" class="bg-slate-900 border border-slate-750 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      
+      <!-- Modal Header -->
+      <div class="px-5 py-3.5 bg-slate-850 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-800 flex items-center justify-center font-black">
+            +Tx
+          </div>
+          <div>
+            <h3 class="text-sm font-extrabold text-white">Submit Custom Transaction for AI Investigation</h3>
+            <p class="text-[11px] text-slate-400">Enter custom customer details, transaction amounts, and flag triggers to test the agent</p>
+          </div>
+        </div>
+        <button @click="showCustomTxModal = false" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- Quick Fill Preset Pills -->
+      <div class="px-5 py-2.5 bg-slate-950/80 border-b border-slate-800/80 flex flex-wrap items-center gap-1.5 text-xs">
+        <span class="text-slate-400 text-[10px] font-bold uppercase tracking-wider mr-1">Quick Presets:</span>
+        <button @click="applyPreset('threshold_breach')" type="button" class="px-2 py-0.5 rounded-full bg-slate-850 hover:bg-slate-800 text-slate-300 hover:text-cyan-400 border border-slate-750 text-[11px] transition-all">
+          ₦12.5M Cash Deposit
+        </button>
+        <button @click="applyPreset('pep_alert')" type="button" class="px-2 py-0.5 rounded-full bg-slate-850 hover:bg-slate-800 text-slate-300 hover:text-amber-400 border border-slate-750 text-[11px] transition-all">
+          PEP Watchlist Match
+        </button>
+        <button @click="applyPreset('compliant_turnover')" type="button" class="px-2 py-0.5 rounded-full bg-slate-850 hover:bg-slate-800 text-slate-300 hover:text-emerald-400 border border-slate-750 text-[11px] transition-all">
+          ₦2.4M Compliant Cash
+        </button>
+        <button @click="applyPreset('corporate_smurf')" type="button" class="px-2 py-0.5 rounded-full bg-slate-850 hover:bg-slate-800 text-slate-300 hover:text-rose-400 border border-slate-750 text-[11px] transition-all">
+          Corporate Structuring
+        </button>
+      </div>
+
+      <!-- Form Body (Scrollable) -->
+      <form @submit.prevent="submitCustomInvestigation()" class="p-5 overflow-y-auto space-y-3.5 text-xs font-sans">
+        
+        <!-- Row 1: Customer Name & Entity Type -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2 space-y-1">
+            <label class="text-[11px] font-bold text-slate-300">Customer Full Name <span class="text-rose-400">*</span></label>
+            <input type="text" x-model="customTx.customer_name" required placeholder="e.g. Fatima Bello" class="w-full bg-slate-950 text-slate-100 text-xs rounded-lg border border-slate-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-inner">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[11px] font-bold text-slate-300">Entity Type</label>
+            <select x-model="customTx.entity_type" class="w-full bg-slate-950 text-slate-100 text-xs rounded-lg border border-slate-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-inner">
+              <option value="INDIVIDUAL">INDIVIDUAL</option>
+              <option value="CORPORATE">CORPORATE</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 2: Account ID & Amount -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[11px] font-bold text-slate-300">Account Identifier / Number</label>
+            <input type="text" x-model="customTx.account_id" placeholder="e.g. ACC-IND-9021" class="w-full bg-slate-950 text-slate-100 text-xs rounded-lg border border-slate-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 font-mono shadow-inner">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[11px] font-bold text-slate-300">Transaction Amount (NGN ₦) <span class="text-rose-400">*</span></label>
+            <input type="number" step="1000" x-model.number="customTx.amount" required placeholder="5000000" class="w-full bg-slate-950 text-emerald-400 font-mono font-bold text-xs rounded-lg border border-slate-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-inner">
+          </div>
+        </div>
+
+        <!-- Row 3: Transaction Type & Flag Trigger -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[11px] font-bold text-slate-300">Transaction Channel / Type</label>
+            <select x-model="customTx.transaction_type" class="w-full bg-slate-950 text-slate-100 text-xs rounded-lg border border-slate-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-inner">
+              <option value="CASH_DEPOSIT">CASH_DEPOSIT (Branch Teller)</option>
+              <option value="INWARD_TRANSFER">INWARD_TRANSFER (NIP Electronic)</option>
+              <option value="WIRE_TRANSFER">WIRE_TRANSFER (Foreign Inward)</option>
+              <option value="CASH_WITHDRAWAL">CASH_WITHDRAWAL (Over-the-Counter)</option>
+            </select>
+          </div>
+          <div class="space-y-1">
+            <label class="text-[11px] font-bold text-slate-300">Trigger Flag Code</label>
+            <select x-model="customTx.flag_reason" class="w-full bg-slate-950 text-slate-100 text-xs rounded-lg border border-slate-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-inner">
+              <option value="STATUTORY_THRESHOLD_BREACH">STATUTORY_THRESHOLD_BREACH (Limit Exceeded)</option>
+              <option value="RAPID_AGGREGATION_STRUCTURING">RAPID_AGGREGATION_STRUCTURING (Smurfing)</option>
+              <option value="PEP_NAME_MATCH">PEP_NAME_MATCH (Sanctions / PEP Alert)</option>
+              <option value="CORPORATE_CASH_THRESHOLD">CORPORATE_CASH_THRESHOLD (Commercial Cash)</option>
+              <option value="ROUND_NUMBER_ALERT">ROUND_NUMBER_ALERT (Unusual Round Amount)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 4: Date & KYC DOB -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[11px] font-bold text-slate-300">Transaction Timestamp</label>
+            <input type="text" x-model="customTx.timestamp" placeholder="2023-05-14 10:30:00" class="w-full bg-slate-950 text-slate-300 font-mono text-xs rounded-lg border border-slate-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-inner">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[11px] font-bold text-slate-300">Customer KYC DOB (YYYY-MM-DD)</label>
+            <input type="text" x-model="customTx.dob" placeholder="1990-05-15" class="w-full bg-slate-950 text-slate-300 font-mono text-xs rounded-lg border border-slate-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-inner">
+          </div>
+        </div>
+
+        <!-- Row 5: Narration -->
+        <div class="space-y-1">
+          <label class="text-[11px] font-bold text-slate-300">Transaction Narration / Memo</label>
+          <input type="text" x-model="customTx.narration" placeholder="e.g. Commercial cash deposit Victoria Island branch" class="w-full bg-slate-950 text-slate-200 text-xs rounded-lg border border-slate-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-inner">
+        </div>
+
+        <!-- Notice -->
+        <div class="p-3 rounded-lg bg-cyan-950/40 border border-cyan-800/60 text-[11px] text-cyan-300 flex items-start gap-2">
+          <span class="text-cyan-400 font-bold shrink-0">ℹ</span>
+          <span>This custom transaction will be committed to the local database, planned by the LangGraph engine, verified by anti-hallucination critique guards, and recorded onto the tamper-evident SHA-256 evidence ledger.</span>
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+          <button type="button" @click="showCustomTxModal = false" class="bg-slate-800 hover:bg-slate-750 text-slate-300 px-4 py-2 rounded-lg border border-slate-700 font-semibold transition-colors">
+            Cancel
+          </button>
+          <button type="submit" :disabled="isRunning" class="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 active:scale-95 text-white font-bold px-5 py-2 rounded-lg shadow-lg shadow-emerald-900/30 flex items-center gap-2 transition-all">
+            <span>Launch AI Investigation</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 4: SUB-STEP ACTIVITY STREAM MODAL                                   -->
+  <!-- ========================================================================= -->
+  <div x-show="showActivityStreamModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md" @keydown.escape.window="showActivityStreamModal = false">
+    <div @click.away="showActivityStreamModal = false" class="bg-slate-900 border border-slate-750 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      
+      <!-- Modal Header -->
+      <div class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-cyan-950/80 border border-cyan-800/80 flex items-center justify-center text-cyan-400 shadow-inner">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-extrabold text-base text-slate-100 tracking-wide">Sub-Step Activity Stream</h3>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold" :class="isRunning ? 'bg-cyan-950 text-cyan-400 border border-cyan-800 animate-pulse' : (events.length > 0 ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-slate-800 text-slate-400')">
+                <span x-text="isRunning ? '● LIVE SSE STREAMING' : (events.length > 0 ? '✓ STREAM COMPLETED' : 'IDLE')"></span>
+              </span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Real-time LangGraph transitions, tool dispatch parameters, and cryptographic event logs</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <!-- Copy Logs Button -->
+          <button @click="copyAllEventsJson()" :disabled="events.length === 0" class="text-xs bg-slate-800 hover:bg-slate-750 disabled:opacity-40 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-700 font-bold transition-all flex items-center gap-1.5 shadow-sm">
+            <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+            <span x-text="copiedEventsToast ? '✓ Copied!' : 'Copy Logs JSON'"></span>
+          </button>
+          
+          <!-- Close Button -->
+          <button @click="showActivityStreamModal = false" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter & Search Toolbar -->
+      <div class="px-4 sm:px-5 py-3 border-b border-slate-800 bg-slate-900/90 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+        <!-- Event Type Filter Pills -->
+        <div class="flex items-center gap-1.5 overflow-x-auto text-xs pb-1 sm:pb-0">
+          <button @click="eventFilter = 'ALL'" class="px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all whitespace-nowrap" :class="eventFilter === 'ALL' ? 'bg-cyan-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700'">
+            All (<span x-text="getEventCountByType('ALL')"></span>)
+          </button>
+          <button @click="eventFilter = 'state_transition'" class="px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all whitespace-nowrap" :class="eventFilter === 'state_transition' ? 'bg-cyan-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700'">
+            Transitions (<span x-text="getEventCountByType('state_transition')"></span>)
+          </button>
+          <button @click="eventFilter = 'tool_call'" class="px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all whitespace-nowrap" :class="eventFilter === 'tool_call' ? 'bg-cyan-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700'">
+            Tool Calls (<span x-text="getEventCountByType('tool_call')"></span>)
+          </button>
+          <button @click="eventFilter = 'claim_added'" class="px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all whitespace-nowrap" :class="eventFilter === 'claim_added' ? 'bg-cyan-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700'">
+            Claims (<span x-text="getEventCountByType('claim_added')"></span>)
+          </button>
+          <button @click="eventFilter = 'evidence_insufficient'" class="px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all whitespace-nowrap" :class="eventFilter === 'evidence_insufficient' ? 'bg-cyan-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700'">
+            Critique (<span x-text="getEventCountByType('evidence_insufficient')"></span>)
+          </button>
+        </div>
+
+        <!-- Search Input -->
+        <div class="relative sm:w-64">
+          <input type="text" x-model="eventSearchQuery" placeholder="Search event payload, tool, claim..." class="w-full bg-slate-950 text-slate-200 text-xs rounded-lg border border-slate-750 pl-8 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-inner">
+          <svg class="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+      </div>
+
+      <!-- Modal Body (Terminal Stream View) -->
+      <div class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-2.5 bg-slate-950/70" id="modalEventLogsBox">
+        <template x-if="getFilteredEvents().length === 0">
+          <div class="py-16 text-center text-slate-500 text-xs italic">
+            <div class="w-10 h-10 rounded-full bg-slate-800/80 mx-auto flex items-center justify-center text-slate-600 mb-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <span>No events matching the selected filter criteria.</span>
+          </div>
+        </template>
+
+        <template x-for="ev in getFilteredEvents()" :key="ev.sequence_number">
+          <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition-all shadow-md">
+            
+            <!-- Event Card Header -->
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div class="flex items-center gap-2">
+                <span class="font-mono font-bold text-xs text-slate-400" x-text="'#' + ev.sequence_number"></span>
+                <span class="px-2 py-0.5 rounded font-extrabold text-[10px]" :class="getEventBadgeClass(ev.event_type)" x-text="ev.event_type"></span>
+                <span class="text-slate-500 font-mono text-[11px]" x-text="formatTime(ev.timestamp)"></span>
+              </div>
+              <button @click="toggleEventPayload(ev.sequence_number)" class="text-[10px] bg-slate-800 hover:bg-slate-750 text-slate-400 hover:text-cyan-300 px-2 py-0.5 rounded border border-slate-700 font-mono transition-colors flex items-center gap-1">
+                <span x-text="expandedEventPayloads[ev.sequence_number] ? 'Hide Raw JSON' : 'Inspect JSON'"></span>
+                <svg class="w-2.5 h-2.5" :class="expandedEventPayloads[ev.sequence_number] ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7 7"/></svg>
+              </button>
+            </div>
+
+            <!-- Formatted Event Payload -->
+            <p class="text-slate-200 text-xs font-sans leading-relaxed break-words" x-text="formatEventPayload(ev)"></p>
+
+            <!-- Collapsible Raw JSON Inspector -->
+            <div x-show="expandedEventPayloads[ev.sequence_number]" x-collapse class="mt-2.5 pt-2 border-t border-slate-850">
+              <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 overflow-x-auto">
+                <pre class="font-mono text-[11px] text-cyan-300 leading-snug whitespace-pre-wrap" x-text="JSON.stringify(ev, null, 2)"></pre>
+              </div>
+            </div>
+
+          </div>
+        </template>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-3.5 sm:p-4 border-t border-slate-800 bg-slate-950/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-3 text-slate-400 font-mono text-[11px]">
+          <span>Current Node: <strong class="text-cyan-400" x-text="currentNode.toUpperCase()"></strong></span>
+          <span>•</span>
+          <span>Retries: <strong class="text-amber-400" x-text="retryCount + '/' + maxRetries"></strong></span>
+          <span>•</span>
+          <span>Mode: <strong class="text-slate-200" x-text="executionMode"></strong></span>
+        </div>
+        <button @click="showActivityStreamModal = false" class="bg-slate-800 hover:bg-slate-750 text-slate-200 px-4 py-1.5 rounded-lg border border-slate-700 font-bold transition-colors">
+          Close Stream Terminal
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
   <!-- ALPINE APP LOGIC & SSE STREAM CLIENT                                      -->
   <!-- ========================================================================= -->
   <script>
@@ -708,8 +1026,9 @@
       return {
         cases: [],
         selectedCaseId: 'CASE-A-STRUCTURING',
-        executionMode: 'CACHED',
+        executionMode: 'LIVE',
         activeProvider: 'mock/llama-3.3-70b',
+        lastLatency: null,
         isRunning: false,
         currentInvestigationId: null,
         eventSource: null,
@@ -745,6 +1064,28 @@
         reportLoading: false,
         copyFeedback: '',
 
+        // Sub-Step Activity Stream Modal State
+        showActivityStreamModal: false,
+        eventFilter: 'ALL',
+        eventSearchQuery: '',
+        expandedEventPayloads: {},
+        copiedEventsToast: false,
+
+        // Custom Case Modal State
+        showCustomTxModal: false,
+        customTx: {
+          customer_name: 'Fatima Bello',
+          account_id: 'ACC-IND-9021',
+          amount: 12500000,
+          timestamp: new Date().toISOString().substring(0, 19).replace('T', ' '),
+          transaction_type: 'CASH_DEPOSIT',
+          flag_reason: 'STATUTORY_THRESHOLD_BREACH',
+          entity_type: 'INDIVIDUAL',
+          dob: '1990-05-15',
+          bvn: '22200011122',
+          narration: 'Commercial cash deposit Lekki branch'
+        },
+
         nodeSteps: [
           { key: 'plan', label: '1. Plan', sublabel: 'Hypotheses' },
           { key: 'act', label: '2. Act', sublabel: 'Tools & Ledger' },
@@ -763,6 +1104,7 @@
             this.cases = await casesRes.json();
             const health = await healthRes.json();
             this.activeProvider = health.provider || 'mock/llama-3.3-70b';
+            if (health.latency_ms) this.lastLatency = health.latency_ms;
             this.updateActiveCaseMeta();
           } catch (e) {
             console.error("Init error:", e);
@@ -785,6 +1127,10 @@
         },
 
         onCaseChange() {
+          if (this.selectedCaseId === 'CUSTOM') {
+            this.openCustomTxModal();
+            return;
+          }
           this.resetUI();
           this.updateActiveCaseMeta();
         },
@@ -808,6 +1154,12 @@
           this.decisionNotes = '';
           this.showBlockInspectorModal = false;
           this.showReportModal = false;
+          this.showCustomTxModal = false;
+          this.showActivityStreamModal = false;
+          this.expandedEventPayloads = {};
+          this.eventFilter = 'ALL';
+          this.eventSearchQuery = '';
+          this.copiedEventsToast = false;
           this.inspectingClaim = null;
           this.inspectingCanonicalJson = '';
           this.inspectingHashStatus = 'idle';
@@ -875,6 +1227,8 @@
           this.$nextTick(() => {
             const logsBox = document.getElementById('eventLogsBox');
             if (logsBox) logsBox.scrollTop = 0;
+            const modalLogsBox = document.getElementById('modalEventLogsBox');
+            if (modalLogsBox && this.showActivityStreamModal) modalLogsBox.scrollTop = 0;
           });
 
           const p = eventData.payload || {};
@@ -973,6 +1327,9 @@
             this.finalStatus = p.final_status ? p.final_status.toLowerCase() : 'completed';
             if (p.audit_memo) this.auditMemo = p.audit_memo;
             this.eventSource.close();
+            fetch('/health').then(r => r.json()).then(h => {
+              if (h.latency_ms) this.lastLatency = h.latency_ms;
+            }).catch(() => {});
           }
 
           // Human decision
@@ -1126,6 +1483,154 @@
           navigator.clipboard.writeText(text);
           this.copyFeedback = label || 'Copied to clipboard!';
           setTimeout(() => { this.copyFeedback = ''; }, 2200);
+        },
+
+        // Custom Transaction Input Helpers
+        openCustomTxModal() {
+          this.showCustomTxModal = true;
+        },
+
+        applyPreset(presetName) {
+          const nowStr = new Date().toISOString().substring(0, 19).replace('T', ' ');
+          if (presetName === 'threshold_breach') {
+            this.customTx = {
+              customer_name: 'Fatima Bello',
+              account_id: 'ACC-IND-9021',
+              amount: 12500000,
+              timestamp: nowStr,
+              transaction_type: 'CASH_DEPOSIT',
+              flag_reason: 'STATUTORY_THRESHOLD_BREACH',
+              entity_type: 'INDIVIDUAL',
+              dob: '1990-05-15',
+              bvn: '22200011122',
+              narration: 'Commercial cash deposit Lekki branch'
+            };
+          } else if (presetName === 'pep_alert') {
+            this.customTx = {
+              customer_name: 'Chief Kingsley Okoye',
+              account_id: 'ACC-IND-4412',
+              amount: 8500000,
+              timestamp: nowStr,
+              transaction_type: 'INWARD_TRANSFER',
+              flag_reason: 'PEP_NAME_MATCH',
+              entity_type: 'INDIVIDUAL',
+              dob: '1958-09-12',
+              bvn: '22144556677',
+              narration: 'Consultancy advisory payment'
+            };
+          } else if (presetName === 'compliant_turnover') {
+            this.customTx = {
+              customer_name: 'Amina Abubakar',
+              account_id: 'ACC-IND-1001',
+              amount: 2400000,
+              timestamp: nowStr,
+              transaction_type: 'CASH_DEPOSIT',
+              flag_reason: 'STATUTORY_THRESHOLD_BREACH',
+              entity_type: 'INDIVIDUAL',
+              dob: '1990-11-04',
+              bvn: '22233445566',
+              narration: 'Retail boutique daily turnover deposit'
+            };
+          } else if (presetName === 'corporate_smurf') {
+            this.customTx = {
+              customer_name: 'Dangote Retail Sub-Agent',
+              account_id: 'ACC-CORP-2002',
+              amount: 9800000,
+              timestamp: nowStr,
+              transaction_type: 'CASH_DEPOSIT',
+              flag_reason: 'RAPID_AGGREGATION_STRUCTURING',
+              entity_type: 'CORPORATE',
+              dob: '',
+              bvn: '22998877665',
+              narration: 'Bulk cement retail proceeds deposit'
+            };
+          }
+        },
+
+        async submitCustomInvestigation() {
+          this.showCustomTxModal = false;
+          this.resetUI();
+          this.executionMode = 'LIVE'; // Custom cases run live
+
+          // Set active case metadata for the UI
+          const txId = 'TX-CUSTOM-' + Math.floor(1000 + Math.random() * 9000);
+          this.activeCaseMeta = {
+            case_id: 'CUSTOM',
+            name: `Custom Case: ${this.customTx.customer_name}`,
+            customer_name: this.customTx.customer_name,
+            account_id: this.customTx.account_id,
+            amount: this.customTx.amount,
+            timestamp: this.customTx.timestamp,
+            transaction_id: txId
+          };
+
+          this.isRunning = true;
+          try {
+            const res = await fetch('/investigations', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                case_id: 'CUSTOM',
+                mode: 'LIVE',
+                custom_transaction: {
+                  ...this.customTx,
+                  transaction_id: txId
+                }
+              })
+            });
+            const data = await res.json();
+            this.currentInvestigationId = data.investigation_id;
+            this.connectSSE(data.stream_url);
+          } catch (e) {
+            console.error("Start custom investigation error:", e);
+            this.isRunning = false;
+          }
+        },
+
+        // Sub-Step Activity Stream Modal Controls
+        openActivityStreamModal() {
+          this.showActivityStreamModal = true;
+          this.$nextTick(() => {
+            const modalLogsBox = document.getElementById('modalEventLogsBox');
+            if (modalLogsBox) modalLogsBox.scrollTop = 0;
+          });
+        },
+
+        toggleEventPayload(seq) {
+          this.expandedEventPayloads[seq] = !this.expandedEventPayloads[seq];
+        },
+
+        async copyAllEventsJson() {
+          try {
+            const jsonStr = JSON.stringify(this.events, null, 2);
+            await navigator.clipboard.writeText(jsonStr);
+            this.copiedEventsToast = true;
+            setTimeout(() => { this.copiedEventsToast = false; }, 2500);
+          } catch (e) {
+            console.error("Failed to copy events JSON:", e);
+          }
+        },
+
+        getFilteredEvents() {
+          let list = this.events || [];
+          if (this.eventFilter !== 'ALL') {
+            list = list.filter(e => e.event_type === this.eventFilter);
+          }
+          if (this.eventSearchQuery && this.eventSearchQuery.trim()) {
+            const q = this.eventSearchQuery.trim().toLowerCase();
+            list = list.filter(e => {
+              const typeMatch = (e.event_type || '').toLowerCase().includes(q);
+              const textMatch = this.formatEventPayload(e).toLowerCase().includes(q);
+              const rawMatch = JSON.stringify(e.payload || {}).toLowerCase().includes(q);
+              return typeMatch || textMatch || rawMatch;
+            });
+          }
+          return list;
+        },
+
+        getEventCountByType(type) {
+          if (type === 'ALL') return this.events.length;
+          return this.events.filter(e => e.event_type === type).length;
         }
       }
     }

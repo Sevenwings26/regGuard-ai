@@ -144,6 +144,7 @@ def test_markdown_audit_memo_generation(sample_snapshot_case_a, sample_snapshot_
     # 1. Case A (STR)
     md_a = generate_audit_memo_markdown(sample_snapshot_case_a)
     assert "# CENTRAL BANK OF NIGERIA (CBN) AML/CFT COMPLIANCE AUDIT MEMORANDUM" in md_a
+    assert "AI Compliance Model:" in md_a
     assert "DRAFT_STR" in md_a
     assert "FORMAL SUSPICIOUS TRANSACTION REPORT (STR) DETAILS" in md_a
     assert "Nigerian Financial Intelligence Unit (NFIU)" in md_a
@@ -179,6 +180,7 @@ def test_html_audit_memo_generation(sample_snapshot_case_a, sample_snapshot_case
     html_a = generate_audit_memo_html(sample_snapshot_case_a)
     assert "<!DOCTYPE html>" in html_a
     assert "Central Bank of Nigeria" in html_a
+    assert "AI Compliance Model:" in html_a
     assert "Suspicious Transaction Report (STR)" in html_a
     assert "@media print" in html_a
     assert "Emeka Okafor" in html_a

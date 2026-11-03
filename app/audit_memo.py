@@ -3,15 +3,42 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from app.state import compute_claim_hash
 
-def get_canonical_json_for_claim(claim: Dict[str, Any]) -> str:
+def format_summary_html(summary_raw: str) -> str:
+    """Formats multi-line or bulleted summaries into clean executive HTML markup."""
+    if not summary_raw:
+        return ""
+    if "\n" in summary_raw:
+        lines = summary_raw.splitlines()
+        parts = []
+        in_ul = False
+        for l in lines:
+            ls = l.strip()
+            if ls.startswith("- ") or ls.startswith("* ") or ls.startswith("• "):
+                if not in_ul:
+                    parts.append("<ul style='margin: 8px 0 8px 20px; padding-left: 0; line-height: 1.6;'>")
+                    in_ul = True
+                parts.append(f"<li style='margin-bottom: 4px;'>{ls[2:]}</li>")
+            else:
+                if in_ul:
+                    parts.append("</ul>")
+                    in_ul = False
+                if ls:
+                    parts.append(f"<p style='margin: 0 0 6px 0; line-height: 1.5;'>{ls}</p>")
+        if in_ul:
+            parts.append("</ul>")
+        return "".join(parts)
+    return f"<p style='margin: 0; line-height: 1.5;'>{summary_raw}</p>"
+
+def get_canonical_json_for_claim(claim: Any) -> str:
     """Returns the canonical JSON string that was hashed to generate the claim's SHA-256 fingerprint."""
+    c = claim.model_dump() if hasattr(claim, "model_dump") else claim
     canonical = {
-        "claim_id": claim.get("claim_id", ""),
-        "text": claim.get("text", ""),
-        "supporting_sources": sorted(claim.get("supporting_sources", [])),
-        "status": claim.get("status", ""),
-        "timestamp": claim.get("timestamp", ""),
-        "prev_hash": claim.get("prev_hash", "0" * 64),
+        "claim_id": c.get("claim_id", ""),
+        "text": c.get("text", ""),
+        "supporting_sources": sorted(c.get("supporting_sources", [])),
+        "status": c.get("status", ""),
+        "timestamp": c.get("timestamp", ""),
+        "prev_hash": c.get("prev_hash", "0" * 64),
     }
     return json.dumps(canonical, sort_keys=True, separators=(",", ":"))
 
@@ -23,7 +50,8 @@ def generate_audit_memo_markdown(snapshot: Dict[str, Any]) -> str:
     inv_id = snapshot.get("investigation_id", "inv_unknown")
     memo = snapshot.get("audit_memo", {}) or {}
     disposition = memo.get("disposition", "UNKNOWN")
-    claims = snapshot.get("claims", [])
+    raw_claims = snapshot.get("claims", [])
+    claims = [c.model_dump() if hasattr(c, "model_dump") else c for c in raw_claims]
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     human_dec = snapshot.get("human_decision") or {}
 
@@ -31,11 +59,13 @@ def generate_audit_memo_markdown(snapshot: Dict[str, Any]) -> str:
     account_id = memo.get("account_id") or snapshot.get("flagged_transaction", {}).get("account_id", "N/A")
     flag_reason = snapshot.get("flagged_transaction", {}).get("flag_reason", "COMPLIANCE_FLAG")
     tip_hash = claims[-1].get("hash") if claims else ("0" * 64)
+    model_name = memo.get("model_name") or snapshot.get("model_name") or "Autonomous Compliance Engine"
 
     lines = []
     lines.append("# CENTRAL BANK OF NIGERIA (CBN) AML/CFT COMPLIANCE AUDIT MEMORANDUM")
     lines.append("**Reporting Financial Institution:** RegGuard Demo Bank Nigeria")
     lines.append(f"**Investigation Reference:** `{inv_id}` | **Case:** `{case_id}`")
+    lines.append(f"**AI Compliance Model:** `{model_name}`")
     lines.append(f"**Audit Generated At:** {now}")
     lines.append("**Governing Jurisdiction:** Federal Republic of Nigeria (CBN AML/CFT Regulations 2022 / 2013)")
     lines.append("\n---\n")
@@ -47,12 +77,16 @@ def generate_audit_memo_markdown(snapshot: Dict[str, Any]) -> str:
         lines.append("> **MANDATORY FILING REQUIRED**: Investigation substantiates intentional transaction structuring below the individual cash transaction threshold of ₦5,000,000.00. Filing with the Nigerian Financial Intelligence Unit (NFIU) is mandated within 24 hours pursuant to CBN AML/CFT Regulations 2022 Section 10(3).\n")
     elif disposition == "ESCALATE_TO_OFFICER":
         lines.append("> [!WARNING]")
-        lines.append("> **AUTONOMOUS EXECUTION HALTED — ESCALATED FOR HUMAN DETERMINATION**: Unresolved demographic mismatch and/or evidentiary ambiguity detected. In accordance with zero-hallucination compliance guardrails, this case is escalated to a senior compliance officer.\n")
+        lines.append("> **AUTONOMOUS EXECUTION HALTED — ESCALATED FOR HUMAN DETERMINATION**: Unresolved demographic mismatch and/or evidentiary ambiguity detected. In accordance with strict citation coverage and evidence corroboration guardrails, this case is escalated to a senior compliance officer.\n")
     elif disposition == "CLEAR_NO_SUSPICION":
         lines.append("> [!NOTE]")
         lines.append("> **STATUTORY CLEARANCE ISSUED**: Factual investigation verified that the transaction strictly complied with applicable CBN regulations in force at transaction timestamp. No suspicious activity identified.\n")
 
-    lines.append(f"**Synthesis Summary:** {memo.get('summary', 'Investigation completed.')}\n")
+    summary_raw = memo.get('summary', 'Investigation completed.')
+    if "\n" in summary_raw:
+        lines.append(f"**Synthesis Summary:**\n\n{summary_raw}\n")
+    else:
+        lines.append(f"**Synthesis Summary:** {summary_raw}\n")
 
     # 2. Subject & Account Profile
     lines.append("## 2. SUBJECT & ACCOUNT METADATA")
@@ -61,6 +95,7 @@ def generate_audit_memo_markdown(snapshot: Dict[str, Any]) -> str:
     lines.append(f"| **Customer / Entity Name** | {subject_name} |")
     lines.append(f"| **Account Identifier** | `{account_id}` |")
     lines.append(f"| **Risk Rating / Flag** | `{flag_reason}` |")
+    lines.append(f"| **AI Compliance Model** | `{model_name}` |")
     lines.append(f"| **Execution Mode** | `{snapshot.get('mode', 'LIVE')}` |")
     lines.append(f"| **Investigation Retries** | {snapshot.get('retry_count', 0)} / {snapshot.get('max_retries', 1)} |")
     lines.append(f"| **Terminal Workflow Status** | `{snapshot.get('final_status', 'in_progress').upper()}` |\n")
@@ -130,7 +165,7 @@ def generate_audit_memo_markdown(snapshot: Dict[str, Any]) -> str:
         lines.append("*(Pending Review — Compliance Officer determination has not yet been submitted.)*\n")
 
     lines.append("---\n")
-    lines.append("**RegGuard AI Assurance:** Cryptographic hash integrity verified. Anti-hallucination guards enforced. Zero unsubstantiated conclusions permitted.")
+    lines.append("**RegGuard AI Assurance:** Cryptographic hash integrity verified. Citation coverage enforced. No disposition without verified primary evidence.")
     return "\n".join(lines)
 
 def generate_audit_memo_html(snapshot: Dict[str, Any]) -> str:
@@ -142,7 +177,8 @@ def generate_audit_memo_html(snapshot: Dict[str, Any]) -> str:
     inv_id = snapshot.get("investigation_id", "inv_unknown")
     memo = snapshot.get("audit_memo", {}) or {}
     disposition = memo.get("disposition", "UNKNOWN")
-    claims = snapshot.get("claims", [])
+    raw_claims = snapshot.get("claims", [])
+    claims = [c.model_dump() if hasattr(c, "model_dump") else c for c in raw_claims]
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     human_dec = snapshot.get("human_decision") or {}
 
@@ -150,6 +186,7 @@ def generate_audit_memo_html(snapshot: Dict[str, Any]) -> str:
     account_id = memo.get("account_id") or snapshot.get("flagged_transaction", {}).get("account_id", "N/A")
     flag_reason = snapshot.get("flagged_transaction", {}).get("flag_reason", "COMPLIANCE_FLAG")
     tip_hash = claims[-1].get("hash") if claims else ("0" * 64)
+    model_name = memo.get("model_name") or snapshot.get("model_name") or "Autonomous Compliance Engine"
 
     # Disposition color badge
     if disposition == "DRAFT_STR":
@@ -303,6 +340,9 @@ def generate_audit_memo_html(snapshot: Dict[str, Any]) -> str:
       <div>
         <h1 class="bank-title">RegGuard Demo Bank Nigeria</h1>
         <div class="sub-title">Central Bank of Nigeria (CBN) AML/CFT Compliance Department</div>
+        <div style="margin-top: 6px; font-size: 12px; color: #475569;">
+          <strong>AI Compliance Model:</strong> <code style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-family:monospace; color:#0f172a; font-weight:700;">{model_name}</code>
+        </div>
       </div>
       <div style="text-align: right;">
         <span class="badge" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;">NGA-CBN COMPLIANCE</span>
@@ -315,7 +355,7 @@ def generate_audit_memo_html(snapshot: Dict[str, Any]) -> str:
         <span>DISPOSITION: {disposition}</span>
         <span class="badge" style="background:white; color:{disp_text}; border:1px solid {disp_border};">{disp_badge}</span>
       </h2>
-      <div style="font-size: 13px;">{memo.get("summary", "")}</div>
+      <div style="font-size: 13px;">{format_summary_html(memo.get("summary", ""))}</div>
     </div>
 
     <h3 style="font-size: 14px; margin-bottom: 5px; color:#0f172a;">Subject Profile & Investigation Parameters</h3>
@@ -329,18 +369,20 @@ def generate_audit_memo_html(snapshot: Dict[str, Any]) -> str:
       <tr>
         <th>Flag Reason</th>
         <td><span class="code">{flag_reason}</span></td>
-        <th>Audit Timestamp</th>
-        <td>{now}</td>
+        <th>AI Intelligence Model</th>
+        <td><span class="code" style="color:#0369a1; font-weight:bold;">{model_name}</span></td>
       </tr>
       <tr>
         <th>Execution Mode</th>
         <td>{snapshot.get("mode", "LIVE")}</td>
-        <th>Investigation Retries</th>
-        <td>{snapshot.get("retry_count", 0)} of {snapshot.get("max_retries", 1)}</td>
+        <th>Audit Timestamp</th>
+        <td>{now}</td>
       </tr>
       <tr>
+        <th>Investigation Retries</th>
+        <td>{snapshot.get("retry_count", 0)} of {snapshot.get("max_retries", 1)}</td>
         <th>Ledger Root Hash</th>
-        <td colspan="3"><span class="code">{tip_hash}</span></td>
+        <td><span class="code">{tip_hash}</span></td>
       </tr>
     </table>
 """

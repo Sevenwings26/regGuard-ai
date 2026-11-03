@@ -33,6 +33,10 @@ class CritiqueDecision(BaseModel):
         default="INSUFFICIENT",
         description="Overall evidentiary assessment status"
     )
+    recommended_disposition: Literal["DRAFT_STR", "CLEAR_NO_SUSPICION"] = Field(
+        default="CLEAR_NO_SUSPICION",
+        description="Structured disposition recommended when sufficient: DRAFT_STR if evidence substantiates a breach, CLEAR_NO_SUSPICION if verified compliant. Ignored when sufficient is False (case escalates)."
+    )
     reason: str = Field(
         ...,
         description="Detailed rationale explaining the assessment"

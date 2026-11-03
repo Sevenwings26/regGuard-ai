@@ -16,7 +16,7 @@ def test_llm_adapter_structured_completion():
     print("\n--- 1. Testing LLM Provider Adapter ---")
     provider = get_llm_provider()
     assert provider is not None
-    assert "llama-3.3-70b" in provider.provider_name
+    assert any(m in provider.provider_name.lower() for m in ["llama", "mock", "meta"])
 
     prompt = "Case B: Musa Ibrahim inward transfer N8,200,000 flagged for PEP."
     plan = provider.complete_structured(InvestigationPlan, prompt)

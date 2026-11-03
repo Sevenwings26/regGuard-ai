@@ -2,22 +2,39 @@ import os
 from typing import Any, Dict, List, Optional
 from fastembed import TextEmbedding, SparseTextEmbedding
 from qdrant_client import QdrantClient, models
+from dotenv import load_dotenv
+
+# Load .env
+_dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
+if os.path.exists(_dotenv_path):
+    load_dotenv(_dotenv_path, override=False)
+else:
+    load_dotenv(override=False)
 
 DEFAULT_STORAGE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "qdrant_storage"))
 COLLECTION_NAME = "cbn_regulations"
+DEFAULT_DENSE_MODEL = os.getenv("EMBEDDING_DENSE_MODEL", "BAAI/bge-small-en-v1.5")
+DEFAULT_SPARSE_MODEL = os.getenv("EMBEDDING_SPARSE_MODEL", "Qdrant/bm25")
 
 class QdrantHybridTool:
     """
     Local embedded hybrid retrieval over CBN regulations using Dense (BGE) + Sparse (BM25) with RRF.
     """
-    def __init__(self, storage_dir: Optional[str] = None):
+    def __init__(
+        self,
+        storage_dir: Optional[str] = None,
+        dense_model_name: Optional[str] = None,
+        sparse_model_name: Optional[str] = None
+    ):
         self.storage_dir = storage_dir or DEFAULT_STORAGE_DIR
         if not os.path.exists(self.storage_dir):
             raise FileNotFoundError(f"Qdrant storage not found at {self.storage_dir}. Run scripts/seed_qdrant_corpus.py first.")
         
         self.client = QdrantClient(path=self.storage_dir)
-        self.dense_model = TextEmbedding("BAAI/bge-small-en-v1.5")
-        self.sparse_model = SparseTextEmbedding("Qdrant/bm25")
+        self.dense_model_name = dense_model_name or os.getenv("EMBEDDING_DENSE_MODEL", DEFAULT_DENSE_MODEL)
+        self.sparse_model_name = sparse_model_name or os.getenv("EMBEDDING_SPARSE_MODEL", DEFAULT_SPARSE_MODEL)
+        self.dense_model = TextEmbedding(self.dense_model_name)
+        self.sparse_model = SparseTextEmbedding(self.sparse_model_name)
 
     def search(
         self,

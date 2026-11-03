@@ -13,7 +13,7 @@ In a traditional bank, a human investigator has to open five different software 
 ### The Most Important Rule: "Never Guess"
 Most generative AI tools (like ChatGPT) try to be helpful by guessing when they do not know the answer. In law and banking compliance, **guessing is catastrophic**—it can lead to false accusations, unlawful account freezes, or heavy regulatory fines.
 
-RegGuard AI is designed with an absolute guarantee: **Zero Hallucinations**.
+RegGuard AI enforces a foundational compliance invariant: **No disposition without verified, cited evidence — otherwise it escalates.**
 - If evidence is missing, it goes looking for it.
 - If two pieces of evidence contradict each other, it does not pick a favorite.
 - If it still cannot be 100% certain, it halts autonomous action and hands the case over to a human compliance officer with a plain-language explanation of what is missing.
@@ -75,12 +75,12 @@ RegGuard AI is designed to augment existing bank operations rather than requirin
 ### Phase 1: Compliance Copilot (Reviewer Assistant)
 - **Deployment**: The bank runs RegGuard AI alongside its current transaction monitoring software.
 - **Workflow**: When an alert fires, RegGuard AI automatically gathers the database records, checks the watchlists, verifies the governing clauses, and generates an executive summary and draft report before a human officer even opens the file.
-- **Value**: Reduces the manual investigation time per alert from 45 minutes to under 2 minutes. The human officer retains final sign-off authority.
+- **Value**: Target operational benefit: compiles evidence and drafts audit memos in under ~2 minutes, drastically cutting the estimated 30–45 minute manual cycle of querying isolated core systems and cross-referencing legal gazettes. The human officer retains final sign-off authority.
 
 ### Phase 2: Automated First-Line Triage
 - **Deployment**: Integrated directly into core banking workflows.
 - **Workflow**: The agent autonomously reviews and issues verified Clearance Certificates for low-risk, provably lawful transactions (e.g., Case C scenarios where historical rules clearly permit the turnover). 
-- **Value**: Eliminates up to 70% of false-positive alert backlog without taking on regulatory risk, because every cleared transaction carries an unbreakable cryptographic evidence chain showing exactly why it was cleared.
+- **Value**: Defensibly triages routine false-positive alerts (e.g., historical threshold mismatches or documented lawful commercial turnover) backed by complete cryptographic audit trails, freeing compliance analysts to focus on complex structuring and money laundering syndicates.
 
 ### Phase 3: Direct Regulatory Filing Integration
 - **Deployment**: Connected via secure API to regulatory portals such as the NFIU goAML gateway.
@@ -93,7 +93,7 @@ RegGuard AI is designed to augment existing bank operations rather than requirin
 | Traditional Manual Review | Black-Box Generic AI | RegGuard AI |
 | :--- | :--- | :--- |
 | Slow (hours per alert) | Fast (seconds) | Fast (seconds) |
-| Human fatigue & missed flags | Makes up facts & hallucinates laws | **Zero hallucination guarantee** |
+| Human fatigue & missed flags | Makes up facts & hallucinates laws | **Strict citation coverage & escalation invariant** |
 | Scrambles to meet 24h filing deadline | Unauditable black-box decisions | **Meets deadline with complete filing draft** |
 | Paper trails easily lost or questioned | No proof of evidence authenticity | **Cryptographic SHA-256 tamper-evident ledger** |
 | High staffing overhead | Unpredictable liability | **Controlled human-in-the-loop escalation** |

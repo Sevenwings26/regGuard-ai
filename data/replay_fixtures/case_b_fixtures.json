@@ -37,10 +37,11 @@
         "historical transaction pattern"
       ],
       "reason": "watchlist ambiguity not resolved; transaction intent not established",
+      "recommended_disposition": "CLEAR_NO_SUSPICION",
       "sufficient": false,
       "suggested_queries": []
     },
-    "recorded_at": "2026-11-01T20:15:19.422340+00:00",
+    "recorded_at": "2026-11-03T04:52:59.979956+00:00",
     "schema_name": "CritiqueDecision"
   },
   "847ae909de4be75bcc4af7877baf16fd00ed13390379b5ecda2558b99c835f6c": {
@@ -81,10 +82,11 @@
         "historical transaction pattern"
       ],
       "reason": "watchlist ambiguity not resolved; transaction intent not established",
+      "recommended_disposition": "CLEAR_NO_SUSPICION",
       "sufficient": false,
       "suggested_queries": []
     },
-    "recorded_at": "2026-11-01T20:15:19.425734+00:00",
+    "recorded_at": "2026-11-03T04:52:59.984499+00:00",
     "schema_name": "CritiqueDecision"
   },
   "cd7a1820b2b014b4962109babda0e6a07ffd564d9f6177665a105e0a5b929cbd": {
@@ -123,7 +125,7 @@
         }
       ]
     },
-    "recorded_at": "2026-11-02T04:05:10.001595+00:00",
+    "recorded_at": "2026-11-03T04:52:59.958646+00:00",
     "schema_name": "InvestigationPlan"
   }
 }
