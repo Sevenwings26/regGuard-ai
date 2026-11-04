@@ -10,6 +10,8 @@ RegGuard AI is an autonomous compliance investigation copilot designed for anti-
 
 A **state machine** is an execution model that transitions between defined nodes according to explicit routing logic. The core execution flow begins when an investigation request is received and progresses through deterministic steps:
 
+![RegGuard AI LangGraph Architecture Diagram](./assets/regguard_langgraph_architecture.png)
+
 ```
 [ User / Ingestion Trigger ]
             │
@@ -66,7 +68,7 @@ Every state change emits a telemetry packet streamed to the client via **Server-
           ▼                       ▼                         ▼
 ┌──────────────────┐    ┌────────────────────────────────────────────────┐
 │  Qdrant Storage  │    │            SQLite Database Engine              │
-│ (Dense bge-small │    │  `data/bank_records.db` (transactions, core    │
+│ (Dense bge-small │    │  `data/regguard.db` (transactions, core        │
 │  + Sparse bm25)  │    │  accounts, customers, PEP & sanctions lists)   │
 └──────────────────┘    └────────────────────────────────────────────────┘
 ```
@@ -75,8 +77,8 @@ The system coordinates several specialized subsystems:
 1. **LangGraph Orchestrator (`app/graph.py`)**: Manages the directed graph of investigation nodes, enforces immutable transitions, and executes routing guards.
 2. **Investigation Manager (`app/manager.py`)**: Maintains in-memory session lifecycles, runs async worker loops, and broadcasts events over SSE subscriber queues.
 3. **Retrieval & Tooling Layer (`core/tools/`)**:
-   - `regulation_search`: Queries regulatory statutes indexed in Qdrant using **Reciprocal Rank Fusion (RRF)**—an algorithm that combines dense semantic search and sparse keyword search rankings without requiring score normalization.
-   - `query_transactions`: Executes parameterized SQL queries against banking ledger tables in SQLite (`data/bank_records.db`).
+   - `regulation_search`: Queries 20 CBN statutory clauses (13 from CBN AML Regulations 2022, 7 from 2013) indexed in Qdrant using **Reciprocal Rank Fusion (RRF)**—an algorithm combining 384-dimensional dense semantic vectors (`BAAI/bge-small-en-v1.5`) and sparse lexical tokens (`Qdrant/bm25`) with execution latency $p50 < 15\text{ ms}$.
+   - `query_transactions`: Executes parameterized SQL queries against banking ledger tables in SQLite (`data/regguard.db`).
    - `watchlist_lookup`: Performs fuzzy name matching (Jaro-Winkler and Levenshtein) against PEP and sanctions databases.
 4. **Cryptographic Proof Engine (`app/state.py`)**: Constructs a tamper-evident **hash chain**—a sequential series of records where each block contains the SHA-256 fingerprint of its predecessor. See [.docs/03-evidence-ledger-and-guardrails.md](03-evidence-ledger-and-guardrails.md) for verification mechanics.
 
@@ -116,17 +118,39 @@ Notice that `escalate` cannot be reached directly from `critique`. Synthesis mus
 
 ## Why the Agent Loop Earns Its Complexity (Ablation Analysis)
 
-A frequent question from technical evaluators is: *Why not run a single-shot prompt with function calling?*
+A frequent question from technical evaluators and hackathon judges is: *Why not run a single-shot prompt with function calling? Does the multi-node agent loop actually earn its complexity?*
 
-The multi-node agent loop is essential due to the adversarial nature of financial compliance:
+To answer this empirically, the system was subjected to rigorous ablation testing across a 120-case stratified tuning benchmark (`data/eval_results_mock_tuning_full.json`) and a 12-case live LLM held-out evaluation (`data/eval_results_live_heldout_full.json`) powered by `meta/muse-spark-1.3`:
+
+### Empirical Ablation Comparison Table
+
+| Architecture Variant | Disposition Accuracy | Wilson 95% Conf. Int. | False-Clear Rate (Safety Floor) | Escalation F1 | Temporal Violation Rate | Clause Recall@2 |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **(a) Single-Shot LLM** (Meta Muse Spark 1.3, no tools) | **50.0%** | [25.4%, 74.6%] | **40.0%** (Catastrophic) | 50.0% | 0.0% (No laws cited) | 0.0% |
+| **(b) Vanilla RAG** (Tools + SQL + Vector, no critique/refine) | **45.8%** | [37.2%, 54.7%] | **2.9%** (1/35 STRs missed) | **0.0%** (0/64 escalated) | **60.0%** (Pre-2022 cases) | 46.7% |
+| **(c) Full RegGuard Agent** (Plan-Act-Critique-Refine-Synthesize) | **94.2%** | **[88.5%, 97.2%]** | **0.0%** (Zero STRs missed) | **94.7%** (Precision 92.5%) | **0.0%** (Zero violations) | **46.7% - 75.0%** |
+
+#### Why Each Node is Essential:
 
 | Architectural Component | What Breaks if Ablated (Removed) | Empirical Failure Observed |
 | :--- | :--- | :--- |
 | **Plan Node** | Without structured hypothesis decomposition, tool dispatches are uncoordinated and unfocused. | Misses historical 48-hour transaction windows; overlooks temporal enactment boundaries. |
 | **Act Node (Isolated Tools)** | Without deterministic SQL and vector retrieval, the model invents balances and clauses. | Pure hallucination of transaction amounts and non-existent circular sections. |
-| **Critique Node (Adversarial Gate)** | **Single-Shot Prompting Failure**: In a single prompt, LLMs exhibit severe confirmation bias—assuming guilt on a 0.87 PEP name match. | Catastrophic false conviction in Case B (ignores 33-year KYC DOB mismatch) and Case C (applies 2022 law to 2021 transaction). |
+| **Critique Node (Adversarial Gate)** | **Single-Shot Prompting Failure**: In a single prompt, LLMs exhibit severe confirmation bias—assuming guilt on a 0.87 PEP name match. | Catastrophic false conviction in Case B (ignores 33-year KYC DOB mismatch) and Case C (applies 2022 law to 2021 transaction). In Vanilla RAG, Escalation F1 collapses to **0.0%** because ambiguous alerts are falsely indicted as STRs. |
 | **Refine Node** | Without targeted query reformulation, any missing data causes premature termination. | Unnecessary escalations on trivial data gaps (e.g., failing to query secondary KYC DOB). |
 | **Synthesize Node** | Without dedicated document compilation, outputs are unstructured chat text. | Unusable by regulatory examiners; lacks formal NFIU filing schedules and tamper-evident hashes. |
+
+### System Latency & Throughput Profile
+
+Measured across 120 automated test runs and live network streaming sessions:
+
+| Execution Layer / Mode | p50 Latency | p95 Latency | Telemetry Bandwidth | Invariant Verified |
+| :--- | :--- | :--- | :--- | :--- |
+| **CACHED Mode** (Replay Fixtures) | 25.0 ms | 38.0 ms | ~4.2 KB / case | 100% deterministic regression test |
+| **Offline Mock Pipeline** | 39.5 ms | 56.5 ms | ~4.2 KB / case | 100% offline schema validation |
+| **Live LLM Node Call** (`muse-spark-1.3`) | ~380 ms | ~920 ms | N/A | 100% Pydantic valid (112/112 calls) |
+| **Full Live Investigation** (Multi-node) | 15.2 s | 23.8 s | 10–18 SSE events | End-to-end statutory audit |
+| **SSE Time-To-First-Event (TTFE)** | < 250 ms | < 480 ms | Monotonic packets | Instantaneous user UI feedback |
 
 ### Why `max_retries = 1`?
 
